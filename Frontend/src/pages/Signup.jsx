@@ -259,7 +259,7 @@ const Signup = () => {
                 </div>
               </div>
             </div>
-            <button className='bg-red-500 font-semibold hover:bg-red-600 transition-all duration-200 text-xl py-2 px-4 rounded-md text-white w-[280px] mx-auto lg:w-[640px]' type='submit' disabled={loading}>{loading ? "Registring..." : "Rigister"}</button>
+            <button className='bg-red-500 font-semibold hover:bg-red-600 transition-all duration-200 text-xl py-2 px-4 rounded-md text-white w-[280px] mx-auto lg:w-[640px]' type='submit' disabled={loading}>{loading ? "Registering..." : "Register"}</button>
           </form>
         </div>
       </section>
