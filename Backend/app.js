@@ -21,14 +21,11 @@ app.use(express.urlencoded({ extended: true }))
 app.use(cookieParser())
 app.use(
   cors({
-    origin: [
-      "http://localhost:3000",
-      "https://auction-frontend-vl5n.onrender.com"
-    ],
+    origin: true,
+    methods: ['GET', 'PUT', 'POST', 'DELETE'],
     credentials: true,
-  })
-);
-
+  }),
+)
 app.use(
   fileupload({
     useTempFiles: true,
