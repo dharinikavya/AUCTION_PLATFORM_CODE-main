@@ -24,8 +24,8 @@ ChartJS.register(
   PointElement
 )
 
-const BiddersAuctionersGraf = () => {
-  const {totalBidders,totalAucteners} = useSelector(state=>state.superAdmin)
+const BiddersAuctioneersGraf = () => {
+  const {totalBidders,totalAuctioneers} = useSelector(state=>state.superAdmin)
   const data={
     labels: [
       "January", "February", "March", "April", "May", "June", "July", 
@@ -39,7 +39,7 @@ const BiddersAuctionersGraf = () => {
         fill:false
       },
       {
-        label:"Number of Auctners",
+        label:"Number of Auctioneers",
         data: totalAucteners,
         borderColor:'#D5522845',
         fill:false
@@ -62,7 +62,7 @@ const BiddersAuctionersGraf = () => {
     plugins: {
       title: {
         display: true, 
-        text: "Number of Bidders and Auctners Registered"
+        text: "Number of Bidders and Auctioneers Registered"
       }
     }
   }
@@ -71,4 +71,4 @@ const BiddersAuctionersGraf = () => {
   return <Line data={data} options={options} />
 }
 
-export default BiddersAuctionersGraf
+export default BiddersAuctioneersGraf

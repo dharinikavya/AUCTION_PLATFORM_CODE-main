@@ -9,7 +9,7 @@ const superAdminSlice = createSlice({
   initialState: {
     loading: false,
     monthlyrevenue: [],
-    totalAucteners: [],
+    totalAuctioneers: [],
     totalBidders: [],
     paymentProofs: [],
     singlePaymentProof: {},
@@ -30,17 +30,17 @@ const superAdminSlice = createSlice({
 
     requestForAllUsers(state, action) {
       state.loading = true
-      state.totalAucteners = []
-      state.totalAucteners = []
+      state.totalAuctioneers = []
+      state.totalAuctioneers = []
     },
     successForAllUsers(state, action) {
       state.loading = false
-      state.totalAucteners = action.payload.auctenersArray
+      state.totalAuctioneers = action.payload.AuctioneersArray
       state.totalBidders = action.payload.biddersArray
     },
     faildForAllUsers(state, action) {
       state.loading = false
-      state.totalAucteners = []
+      state.totalAuctioneers = []
       state.totalBidders = []
     },
 
@@ -100,7 +100,7 @@ const superAdminSlice = createSlice({
       state.loading = false
       state.monthlyrevenue = state.monthlyrevenue
       state.paymentProofs = state.paymentProofs
-      state.totalAucteners = state.totalAucteners
+      state.totalAuctioneers = state.totalAuctioneers
       state.totalBidders = state.totalBidders
       state.singlePaymentProof = {}
     },

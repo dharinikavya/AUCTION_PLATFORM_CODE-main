@@ -12,7 +12,7 @@ const ViewMyAuctions = () => {
   const navigate = useNavigate()
 
   useEffect(() => {
-    if (!isAuthenticated || user.role !== 'Auctioner') {
+    if (!isAuthenticated || user.role !== 'Auctioneer') {
         navigate('/')
     }
     dispatch(getMyAuctionItem())

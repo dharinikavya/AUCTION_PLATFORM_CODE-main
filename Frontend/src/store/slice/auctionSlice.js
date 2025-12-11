@@ -1,6 +1,6 @@
 import { AUCTION_API_POINT } from '@/utils/APIs'
 import { createSlice } from '@reduxjs/toolkit'
-import axios from 'axios'
+import axiosInstance from "@/utils/axiosInstance"
 import { toast } from 'react-toastify'
 
 const auctionSlice = createSlice({
@@ -14,93 +14,62 @@ const auctionSlice = createSlice({
     allAuctions: [],
   },
   reducers: {
-    getAllauctionRequiest(state, action) {
-      state.loading = true
-    },
-    getAllauctionSuccess(state, action) {
+    getAllauctionRequiest: (state) => { state.loading = true },
+    getAllauctionSuccess: (state, action) => {
       state.loading = false
       state.allAuctions = action.payload
     },
-    getAllauctionFaild(state, action) {
-      state.loading = false
-    },
+    getAllauctionFaild: (state) => { state.loading = false },
 
-    getAuctionDetailRequiest(state, action) {
-      state.loading = true
-    },
-    getAuctionDetailSuccess(state, action) {
+    getAuctionDetailRequiest: (state) => { state.loading = true },
+    getAuctionDetailSuccess: (state, action) => {
       state.loading = false
       state.auctionDetail = action.payload.auctionItem
       state.auctionBidder = action.payload.bidders
     },
-    getAuctionDetailFaild(state, action) {
-      state.loading = false
-      state.auctionDetail = state.auctionDetail
-      state.auctionBidder = state.auctionBidder
-    },
+    getAuctionDetailFaild: (state) => { state.loading = false },
 
-    createAuctionRequest(state, action) {
-      state.loading = true
-    },
-    createAuctionSuccess(state, action) {
-      state.loading = false
-    },
-    createAuctionFaild(state, action) {
-      state.loading = false
-    },
+    createAuctionRequest: (state) => { state.loading = true },
+    createAuctionSuccess: (state) => { state.loading = false },
+    createAuctionFaild: (state) => { state.loading = false },
 
-    getMyAuctionItemsRequest(state, action) {
+    getMyAuctionItemsRequest: (state) => {
       state.loading = true
       state.myAuctions = []
     },
-    getMyAuctionItemsSuccess(state, action) {
+    getMyAuctionItemsSuccess: (state, action) => {
       state.loading = false
       state.myAuctions = action.payload
     },
-    getMyAuctionItemsFaild(state, action) {
+    getMyAuctionItemsFaild: (state) => {
       state.loading = false
       state.myAuctions = []
     },
 
-    deleteAuctionItemRequest(state, action) {
-      state.loading = true
-    },
-    deleteAuctionItemSuccess(state, action) {
-      state.loading = false
-    },
-    deleteAuctionItemFaild(state, action) {
-      state.loading = false
-    },
+    deleteAuctionItemRequest: (state) => { state.loading = true },
+    deleteAuctionItemSuccess: (state) => { state.loading = false },
+    deleteAuctionItemFaild: (state) => { state.loading = false },
 
-    republishAuctionItemRequest(state, action) {
-      state.loading = true
-    },
-    republishAuctionItemSuccess(state, action) {
-      state.loading = false
-    },
-    republishAuctionItemFaild(state, action) {
-      state.loading = false
-    },
+    republishAuctionItemRequest: (state) => { state.loading = true },
+    republishAuctionItemSuccess: (state) => { state.loading = false },
+    republishAuctionItemFaild: (state) => { state.loading = false },
 
-    resetSlice(state, action) {
+    resetSlice: (state) => {
       state.loading = false
-      state.auctionDetail = state.auctionDetail
-      state.itemDetail = state.itemDetail
-      state.myAuctions = state.myAuctions
-      state.allAuctions = state.allAuctions
     },
   },
 })
 
-//get auction items
+
+// -----------------------------
+//        THUNKS
+// -----------------------------
+
+// GET ALL AUCTION ITEMS
 export const getAllAuctionItem = () => async (dispatch) => {
-  // console.log("Hello")
   dispatch(auctionSlice.actions.getAllauctionRequiest())
   try {
-    const { data } = await axios.get(`${AUCTION_API_POINT}/allitems`, {
-      withCredentials: true,
-    })
-    // console.log(data)
+    const { data } = await axiosInstance.get(`${AUCTION_API_POINT}/allitems`)
     dispatch(auctionSlice.actions.getAllauctionSuccess(data.items))
     dispatch(auctionSlice.actions.resetSlice())
   } catch (error) {
@@ -110,13 +79,12 @@ export const getAllAuctionItem = () => async (dispatch) => {
   }
 }
 
-//get auction detail
+
+// GET AUCTION DETAIL
 export const getAuctionDetail = (id) => async (dispatch) => {
   dispatch(auctionSlice.actions.getAuctionDetailRequiest())
   try {
-    const { data } = await axios.get(`${AUCTION_API_POINT}/auction/${id}`, {
-      withCredentials: true,
-    })
+    const { data } = await axiosInstance.get(`${AUCTION_API_POINT}/auction/${id}`)
     dispatch(auctionSlice.actions.getAuctionDetailSuccess(data))
     dispatch(auctionSlice.actions.resetSlice())
   } catch (error) {
@@ -126,14 +94,18 @@ export const getAuctionDetail = (id) => async (dispatch) => {
   }
 }
 
-// /create  auction
+
+// CREATE AUCTION
 export const createAuction = (formData) => async (dispatch) => {
   dispatch(auctionSlice.actions.createAuctionRequest())
   try {
-    const { data } = await axios.post(`${AUCTION_API_POINT}/create`, formData, {
-      withCredentials: true,
-      headers: { 'Content-Type': 'multiprt/form-data' },
-    })
+    const { data } = await axiosInstance.post(
+      `${AUCTION_API_POINT}/create`,
+      formData,
+      {
+        headers: { "Content-Type": "multipart/form-data" },
+      }
+    )
     toast.success(data.message)
     dispatch(auctionSlice.actions.createAuctionSuccess())
     dispatch(getAllAuctionItem())
@@ -143,51 +115,49 @@ export const createAuction = (formData) => async (dispatch) => {
     toast.error(error?.response?.data?.message)
   }
 }
-// get my auctions
+
+
+// GET MY AUCTIONS
 export const getMyAuctionItem = () => async (dispatch) => {
   dispatch(auctionSlice.actions.getMyAuctionItemsRequest())
   try {
-    const { data } = await axios.get(`${AUCTION_API_POINT}/myitems`, {
-      withCredentials: true,
-    })
-    // console.log(data.items)
+    const { data } = await axiosInstance.get(`${AUCTION_API_POINT}/myitems`)
     dispatch(auctionSlice.actions.getMyAuctionItemsSuccess(data.items))
   } catch (error) {
-    console.log(error)
     dispatch(auctionSlice.actions.getMyAuctionItemsFaild())
+    console.log(error)
   }
 }
-// delete auction
+
+
+// DELETE AUCTION
 export const deleteAuctionItem = (id) => async (dispatch) => {
   dispatch(auctionSlice.actions.deleteAuctionItemRequest())
   try {
-    const { data } = await axios.delete(`${AUCTION_API_POINT}/delete/${id}`, {
-      withCredentials: true,
-    })
+    const { data } = await axiosInstance.delete(`${AUCTION_API_POINT}/delete/${id}`)
     toast.success(data?.message)
     dispatch(auctionSlice.actions.deleteAuctionItemSuccess())
     dispatch(getMyAuctionItem())
     dispatch(getAllAuctionItem())
     dispatch(auctionSlice.actions.resetSlice())
   } catch (error) {
-    // console.log(error)
     dispatch(auctionSlice.actions.deleteAuctionItemFaild())
     dispatch(auctionSlice.actions.resetSlice())
     toast.error(error?.response?.data?.message)
   }
 }
-//republish auction
+
+
+// REPUBLISH AUCTION
 export const republishAuction = (id, formdata) => async (dispatch) => {
-  console.log(formdata)
   dispatch(auctionSlice.actions.republishAuctionItemRequest())
   try {
-    const { data } = await axios.put(
+    const { data } = await axiosInstance.put(
       `${AUCTION_API_POINT}/item/republish/${id}`,
-       formdata ,
+      formdata,
       {
-        withCredentials: true,
-        headers: { 'Content-Type': 'application/json' },
-      },
+        headers: { "Content-Type": "application/json" },
+      }
     )
     toast.success(data.message)
     dispatch(auctionSlice.actions.republishAuctionItemSuccess())
@@ -195,10 +165,10 @@ export const republishAuction = (id, formdata) => async (dispatch) => {
     dispatch(getAllAuctionItem())
     dispatch(auctionSlice.actions.resetSlice())
   } catch (error) {
-    console.log(error)
     dispatch(auctionSlice.actions.republishAuctionItemFaild())
     dispatch(auctionSlice.actions.resetSlice())
     toast.error(error?.response?.data?.message)
   }
 }
+
 export default auctionSlice.reducer

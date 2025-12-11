@@ -46,7 +46,7 @@ const Deshboard = () => {
                 </div>
                 <div className="">
                     <h3 className="text-black font-bold text-xl">Users</h3>
-                    <BiddersAuctionersGraf />
+                    <BiddersAuctioneersGraf />
                 </div>
                 <div className="">
                     <h3 className="text-black font-bold text-xl">Payment Proofs</h3>
@@ -64,4 +64,4 @@ const Deshboard = () => {
   )
 }
 
-export default Deshboard
+export default Dashboard

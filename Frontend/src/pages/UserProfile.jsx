@@ -173,7 +173,7 @@ const UserProfile = () => {
             <div className="mb-6 w-full">
               <h3 className="text-xl font-semibold mb-4">Outher User Detail</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {user.role === 'Auctioner' && (
+                {user.role === 'Auctioneer' && (
                   <>
                     <div>
                       <label className="block text-sm font-medium text-gray-700">
