@@ -96,11 +96,11 @@ const SideDrower = () => {
               <>
                 <li>
                   <Link
-                    to={'/deshboard'}
+                    to={'/dashboard'}
                     className="flex text-lg font-semibold gap-2 items-center hover:text-red-500 hover:transition-all hover:duration-150"
                   >
                     <MdDashboard />
-                    Deshboard
+                    Dashboard
                   </Link>
                 </li>
               </>
