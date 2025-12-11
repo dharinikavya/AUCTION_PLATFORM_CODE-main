@@ -30,17 +30,17 @@ export const proofCommission = catchAsyncError(async (req, res, next) => {
   if (!allowedFormats.includes(proof.mimetype)) {
     return next(new ErrorHandler('ScreenSchot format is not allowed', 401))
   }
-  const clodinaryResponse = await cloudinary.uploader.upload(
+  const cloudinaryResponse = await cloudinary.uploader.upload(
     proof.tempFilePath,
   )
-  if(!clodinaryResponse || clodinaryResponse.error){
-    return next(new ErrorHandler(clodinaryResponse.error || "Cloudinary error",400))
+  if(!cloudinaryResponse || cloudinaryResponse.error){
+    return next(new ErrorHandler(cloudinaryResponse.error || "Cloudinary error",400))
   }
   const commissionProof = await PaymentProf.create({
     userId:req.user._id,
     proof:{
-        public_id: clodinaryResponse.public_id,
-      url: clodinaryResponse.secure_url,
+        public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
     },
     amount,
     comment

@@ -48,12 +48,12 @@ export const register = catchAsyncError(async (req, res, next) => {
   if (isRegister) {
     return next(new ErrorHandler('User already exist with this email', 400))
   }
-  const clodinaryResponse = await cloudinary.uploader.upload(
+  const cloudinaryResponse = await cloudinary.uploader.upload(
     profileImage.tempFilePath,
   )
-  if (!clodinaryResponse || clodinaryResponse.error) {
+  if (!cloudinaryResponse || cloudinaryResponse.error) {
     return next(
-      new ErrorHandler(clodinaryResponse.error || 'Cloudinary error', 400),
+      new ErrorHandler(cloudinaryResponse.error || 'Cloudinary error', 400),
     )
   }
   const user = await User.create({
@@ -64,8 +64,8 @@ export const register = catchAsyncError(async (req, res, next) => {
     role,
     phone,
     profileImage: {
-      public_id: clodinaryResponse.public_id,
-      url: clodinaryResponse.secure_url,
+      public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
     },
     paymentMethods: {
       bankTransfer: {

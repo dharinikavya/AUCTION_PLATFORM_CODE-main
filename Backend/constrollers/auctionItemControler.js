@@ -62,13 +62,13 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler('You already have one auction active'))
   }
   try {
-    const clodinaryResponse = await cloudinary.uploader.upload(
+    const cloudinaryResponse = await cloudinary.uploader.upload(
       image.tempFilePath,
     )
-    if (!clodinaryResponse || clodinaryResponse.error) {
+    if (!cloudinaryResponse || cloudinaryResponse.error) {
       return next(
         new ErrorHandler(
-          clodinaryResponse.error ||
+          cloudinaryResponse.error ||
             'Faild to upload auction image to cloudinary',
           400,
         ),
@@ -83,8 +83,8 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
       startTime,
       endTime,
       image: {
-        public_id: clodinaryResponse.public_id,
-        url: clodinaryResponse.secure_url,
+        public_id: cloudinaryResponse.public_id,
+        url: cloudinaryResponse.secure_url,
       },
       createdBy: req.user._id,
     })
