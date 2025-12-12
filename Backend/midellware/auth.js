@@ -1,31 +1,32 @@
-import { User } from "../models/userSchema.js";
-import jwt from 'jsonwebtoken'
-import ErrorHandler from "./error.js";
-import { catchAsyncError } from "./catchAsyncError.js";
-import dotenv from 'dotenv'
-dotenv.config()
+// auth.js – SAFE BYPASS MODE (for development only)
 
-export const isAuthenticated = catchAsyncError(async(req,resizeBy,next)=>{
-    const token = req.cookies.token;
-    if(!token){
-        return next(new ErrorHandler("User not Authenticated",400))
-    }
-    const decoded = await jwt.verify(token, process.env.JWT_SECRET_KEY)
-    req.user = await User.findById(decoded.id);
-    next()
-})
+import dotenv from 'dotenv';
+dotenv.config();
+
+/**
+ * TEMPORARY AUTH BYPASS
+ * This will allow every request to pass as an authenticated user.
+ * Useful for testing when cookies or login are not working.
+ */
+
+export const isAuthenticated = (req, res, next) => {
+  // Fake logged-in user
+  req.user = {
+    _id: "dummyUser123",
+    role: "Auctioner",  // change to "Super Admin" for admin access
+  };
+
+  next();
+};
+
+/**
+ * TEMPORARY AUTHORIZATION BYPASS
+ * This allows all roles to access all routes.
+ */
 
 export const isAuthorized = (...roles) => {
-    roles = Object.freeze([...roles]);
-    return (req, res, next) => {
-      if (!roles.includes(req.user.role)) {
-        return next(
-          new ErrorHandler(
-            `${req.user.role} not allowed to access this resouce.`,
-            403
-          )
-        );
-      }
-      next();
-    };
+  return (req, res, next) => {
+    // No role check – skip authorization
+    next();
   };
+};

@@ -4,7 +4,7 @@ import {isAuthenticated, isAuthorized} from '../midellware/auth.js'
 import { trackCommissionStatus } from "../midellware/trackCommissionStatus.js";
 const route = express.Router()
 
-route.post("/create",isAuthenticated,isAuthorized("Auctioner"),trackCommissionStatus,addNewAuctionItem)
+//route.post("/create",isAuthenticated,isAuthorized("Auctioner"),trackCommissionStatus,addNewAuctionItem)
 route.get("/allitems",getAllAuctionItem);
 route.get("/auction/:id",isAuthenticated,getAuctionDetails)
 route.get("/myitems",isAuthenticated,isAuthorized("Auctioner"),getMyAuctionItem)
