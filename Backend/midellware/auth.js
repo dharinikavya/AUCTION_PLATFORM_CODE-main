@@ -1,32 +1,33 @@
-// auth.js – SAFE BYPASS MODE (for development only)
-
-import dotenv from 'dotenv';
+import { User } from "../models/userSchema.js";
+import jwt from "jsonwebtoken";
+import ErrorHandler from "./error.js";
+import { catchAsyncError } from "./catchAsyncError.js";
+import dotenv from "dotenv";
 dotenv.config();
 
-/**
- * TEMPORARY AUTH BYPASS
- * This will allow every request to pass as an authenticated user.
- * Useful for testing when cookies or login are not working.
- */
+export const isAuthenticated = catchAsyncError(async (req, res, next) => {
+  const token = req.cookies.token;
 
-export const isAuthenticated = (req, res, next) => {
-  // Fake logged-in user
-  req.user = {
-    _id: "dummyUser123",
-    role: "Auctioner",  // change to "Super Admin" for admin access
-  };
+  if (!token) {
+    return next(new ErrorHandler("User not Authenticated", 400));
+  }
+
+  const decoded = jwt.verify(token, process.env.JWT_SECRET_KEY);
+  req.user = await User.findById(decoded.id);
 
   next();
-};
-
-/**
- * TEMPORARY AUTHORIZATION BYPASS
- * This allows all roles to access all routes.
- */
+});
 
 export const isAuthorized = (...roles) => {
   return (req, res, next) => {
-    // No role check – skip authorization
+    if (!roles.includes(req.user.role)) {
+      return next(
+        new ErrorHandler(
+          `${req.user.role} is not allowed to access this resource.`,
+          403
+        )
+      );
+    }
     next();
   };
 };
