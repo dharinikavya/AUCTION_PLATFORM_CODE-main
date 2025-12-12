@@ -1,6 +1,6 @@
 import React, { useState } from 'react'
 import { RiAuctionFill, RiOctagonFill } from 'react-icons/ri'
-import { MdLeaderboard, MdDeshboard } from 'react-icons/md'
+import { MdLeaderboard, MdDashboard } from 'react-icons/md'
 import { SiGooglesearchconsole } from 'react-icons/si'
 import { BsFillInfoSquareFill } from 'react-icons/bs'
 import { FaFacebook, FaUser } from 'react-icons/fa'
@@ -96,11 +96,11 @@ const SideDrower = () => {
               <>
                 <li>
                   <Link
-                    to={'/deshboard'}
+                    to={'/dashboard'}
                     className="flex text-lg font-semibold gap-2 items-center hover:text-red-500 hover:transition-all hover:duration-150"
                   >
-                    <MdDeshboard />
-                    Deshboard
+                    <MdDashboard />
+                    Dashboard
                   </Link>
                 </li>
               </>
