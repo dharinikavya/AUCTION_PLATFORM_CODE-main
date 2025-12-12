@@ -1,53 +1,70 @@
-import express from 'express'
-import dotenv from 'dotenv'
-import mongoose from 'mongoose'
-import cors from 'cors'
-import cookieParser from 'cookie-parser'
-import fileupload from 'express-fileupload'
-import { errorMiddleware } from './midellware/error.js'
-import userRoute from './routes/userRoute.js'
-import auctionRoute from './routes/auctionRoute.js'
-import bidRoute from './routes/bidRoute.js'
-import commissionRoute from './routes/commissionRoute.js'
-import supperAdminRoute from './routes/superAdminRoute.js'
-import { endedAuctionCron } from './automation/endedAuctionCron.js'
-import {verifyCommissionCron} from './automation/verifyCommissionCron.js'
+import express from 'express';
+import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import fileupload from 'express-fileupload';
+import { errorMiddleware } from './midellware/error.js';
+import userRoute from './routes/userRoute.js';
+import auctionRoute from './routes/auctionRoute.js';
+import bidRoute from './routes/bidRoute.js';
+import commissionRoute from './routes/commissionRoute.js';
+import supperAdminRoute from './routes/superAdminRoute.js';
+import { endedAuctionCron } from './automation/endedAuctionCron.js';
+import { verifyCommissionCron } from './automation/verifyCommissionCron.js';
 
-dotenv.config()
-const app = express()
+dotenv.config();
+const app = express();
 
-app.use(express.json())
-app.use(express.urlencoded({ extended: true }))
-app.use(cookieParser())
+app.use(express.json());
+app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
+
+// ---------------------------
+// ⭐ FINAL WORKING CORS SETUP
+// ---------------------------
+const allowedOrigins = [
+  "http://localhost:5173",
+  "http://localhost:3000",
+  "https://auction-frontend-vl5n.onrender.com"
+];
+
 app.use(
   cors({
-    origin: true,
-    methods: ['GET', 'PUT', 'POST', 'DELETE'],
+    origin: function (origin, callback) {
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("CORS blocked"), false);
+      }
+    },
     credentials: true,
-  }),
-)
+    methods: ["GET", "POST", "PUT", "DELETE"],
+  })
+);
+
 app.use(
   fileupload({
     useTempFiles: true,
-    tempFileDir: '/tmp/',
-  }),
-)
+    tempFileDir: "/tmp/",
+  })
+);
 
-// routers
-app.use("/api/v1/user",userRoute)
-app.use("/api/v1/auctionitem",auctionRoute)
-app.use("/api/v1/bid",bidRoute)
-app.use("/api/v1/commission",commissionRoute)
-app.use("/api/v1/superadmin",supperAdminRoute)
+// Routers
+app.use("/api/v1/user", userRoute);
+app.use("/api/v1/auctionitem", auctionRoute);
+app.use("/api/v1/bid", bidRoute);
+app.use("/api/v1/commission", commissionRoute);
+app.use("/api/v1/superadmin", supperAdminRoute);
 
-endedAuctionCron()
-verifyCommissionCron()
+endedAuctionCron();
+verifyCommissionCron();
 
 mongoose
   .connect(process.env.MONGOURL)
-  .then(() => console.log(`DB is connected`))
-  .catch((err) => console.log(err))
+  .then(() => console.log("DB is connected"))
+  .catch((err) => console.log(err));
 
-app.use(errorMiddleware)
+app.use(errorMiddleware);
 
-export default app
+export default app;
