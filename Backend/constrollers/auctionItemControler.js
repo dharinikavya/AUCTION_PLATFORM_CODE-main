@@ -35,7 +35,7 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
     !startTime ||
     !endTime
   ) {
-    return next(new ErrorHandler('Please provide all detial', 401))
+    return next(new ErrorHandler('Please provide all detail', 401))
   }
   if (new Date(startTime) < Date.now()) {
     return next(
