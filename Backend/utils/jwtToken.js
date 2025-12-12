@@ -8,8 +8,8 @@ export const genrateToken = (user, message, statusCode, res) => {
   res.status(statusCode)
     .cookie("token", token, {
       httpOnly: true,
-      secure: true,        // required for render (https)
-      sameSite: "none",    // allow cross-site cookie
+      secure: process.env.NODE_ENV === "production",        // only secure in production
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
       maxAge: 5 * 24 * 60 * 60 * 1000,
     })
     .json({
