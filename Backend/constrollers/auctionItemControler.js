@@ -8,8 +8,9 @@ import mongoose from 'mongoose'
 
 export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
   if (!req.files || Object.keys(req.files).length === 0) {
-    return next(new ErrorHandler('Auction Item image required...', 400))
+    return next(new ErrorHandler('Auction item image required', 400))
   }
+
   const { image } = req.files
   const allowedFormats = ['image/png', 'image/jpeg', 'image/webp']
   if (!allowedFormats.includes(image.mimetype)) {
@@ -35,12 +36,13 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
     !startTime ||
     !endTime
   ) {
-    return next(new ErrorHandler('Please provide all detail', 401))
+    return next(new ErrorHandler('Please provide all details', 401))
   }
-  if (new Date(startTime) < Date.now()) {
+
+  if (new Date(startTime) < new Date()) {
     return next(
       new ErrorHandler(
-        'Auction starting time must be greater then present time',
+        'Auction starting time must be greater than present time',
         400,
       ),
     )
@@ -49,31 +51,39 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
   if (new Date(startTime) >= new Date(endTime)) {
     return next(
       new ErrorHandler(
-        'Auction starting time must be lessa then ending time',
+        'Auction starting time must be less than ending time',
         400,
       ),
     )
   }
-  const alreadyOneAuctionActive = await Auction.find({
+
+  // ✅ FIXED ACTIVE AUCTION CHECK
+  const alreadyOneAuctionActive = await Auction.findOne({
     createdBy: req.user._id,
-    endTime: { $gt: Date.now() },
+    endTime: { $gt: new Date() },
   })
-  if (alreadyOneAuctionActive.length > 0) {
-    return next(new ErrorHandler('You already have one auction active'))
+
+  if (alreadyOneAuctionActive) {
+    return next(
+      new ErrorHandler('You already have one auction active', 400)
+    )
   }
+
   try {
     const cloudinaryResponse = await cloudinary.uploader.upload(
       image.tempFilePath,
     )
+
     if (!cloudinaryResponse || cloudinaryResponse.error) {
       return next(
         new ErrorHandler(
           cloudinaryResponse.error ||
-            'Faild to upload auction image to cloudinary',
+            'Failed to upload auction image to Cloudinary',
           400,
         ),
       )
     }
+
     const auctionItem = await Auction.create({
       title,
       description,
@@ -88,20 +98,21 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
       },
       createdBy: req.user._id,
     })
+
     res.status(201).json({
       success: true,
-      message: `Auction item created and will be kisted on auction at ${startTime}`,
+      message: `Auction item created and will be listed at ${startTime}`,
       auctionItem,
     })
   } catch (error) {
     return next(
-      new ErrorHandler(error.message || 'Faild to create auction', 500),
+      new ErrorHandler(error.message || 'Failed to create auction', 500),
     )
   }
 })
 
 export const getAllAuctionItem = catchAsyncError(async (req, res, next) => {
-  let items = await Auction.find()
+  const items = await Auction.find()
   res.status(200).json({
     success: true,
     items,
@@ -109,8 +120,7 @@ export const getAllAuctionItem = catchAsyncError(async (req, res, next) => {
 })
 
 export const getMyAuctionItem = catchAsyncError(async (req, res, next) => {
-  const userId = req.user._id
-  const items = await Auction.find({ createdBy: userId })
+  const items = await Auction.find({ createdBy: req.user._id })
   res.status(200).json({
     success: true,
     items,
@@ -119,15 +129,19 @@ export const getMyAuctionItem = catchAsyncError(async (req, res, next) => {
 
 export const getAuctionDetails = catchAsyncError(async (req, res, next) => {
   const auctionId = req.params.id
+
   if (!mongoose.Types.ObjectId.isValid(auctionId)) {
-    return next(new ErrorHandler('Invalid id Format', 400))
+    return next(new ErrorHandler('Invalid ID format', 400))
   }
+
   const auctionItem = await Auction.findById(auctionId)
+
   if (!auctionItem) {
     return next(new ErrorHandler('Auction not found', 404))
   }
+
   const bidders = auctionItem.bids.sort((a, b) => b.amount - a.amount)
-  // console.log(bidders)
+
   res.status(200).json({
     success: true,
     bidders,
@@ -136,17 +150,20 @@ export const getAuctionDetails = catchAsyncError(async (req, res, next) => {
 })
 
 export const removeFromAuction = catchAsyncError(async (req, res, next) => {
-  const userId = req.user._id
   const auctionId = req.params.id
+
   if (!mongoose.Types.ObjectId.isValid(auctionId)) {
-    return next(new ErrorHandler('Invalid id Format', 400))
+    return next(new ErrorHandler('Invalid ID format', 400))
   }
+
   const auctionItem = await Auction.findById(auctionId)
+
   if (!auctionItem) {
     return next(new ErrorHandler('Auction not found', 404))
   }
 
   await auctionItem.deleteOne()
+
   res.status(200).json({
     success: true,
     message: 'Auction item deleted successfully',
@@ -155,35 +172,41 @@ export const removeFromAuction = catchAsyncError(async (req, res, next) => {
 
 export const republishItem = catchAsyncError(async (req, res, next) => {
   const auctionId = req.params.id
-  if (!req.body.startTime || !req.body.endTime) {
-    return next(new ErrorHandler('StartTime and End Time must be required'))
+  const { startTime, endTime } = req.body
+
+  if (!startTime || !endTime) {
+    return next(new ErrorHandler('StartTime and EndTime are required', 400))
   }
+
   if (!mongoose.Types.ObjectId.isValid(auctionId)) {
-    return next(new ErrorHandler('Invalid id Format', 400))
+    return next(new ErrorHandler('Invalid ID format', 400))
   }
+
   let auctionItem = await Auction.findById(auctionId)
+
   if (!auctionItem) {
     return next(new ErrorHandler('Auction not found', 404))
   }
-  if (new Date(auctionItem.endTime) > Date.now()) {
+
+  if (new Date(auctionItem.endTime) > new Date()) {
     return next(
       new ErrorHandler('Auction is already active, cannot republish', 400),
     )
   }
-  let data = {
-    startTime: new Date(req.body.startTime),
-    endTime: new Date(req.body.endTime),
-  }
 
-  if (data.startTime < Date.now()) {
+  const newStartTime = new Date(startTime)
+  const newEndTime = new Date(endTime)
+
+  if (newStartTime < new Date()) {
     return next(
       new ErrorHandler(
-        'Auction starting time must be grater than present time',
+        'Auction starting time must be greater than present time',
         400,
       ),
     )
   }
-  if (data.startTime >= data.endTime) {
+
+  if (newStartTime >= newEndTime) {
     return next(
       new ErrorHandler(
         'Auction starting time must be less than ending time',
@@ -192,32 +215,36 @@ export const republishItem = catchAsyncError(async (req, res, next) => {
     )
   }
 
-
-  if(auctionItem.highestBidder){
-    const highestBidder = await User.findById(auctionItem.highestBidder);
-    highestBidder.monySpent -= auctionItem.currentBid;
-    highestBidder.auctionWon -= 1;
-    highestBidder.save()
+  if (auctionItem.highestBidder) {
+    const highestBidder = await User.findById(auctionItem.highestBidder)
+    if (highestBidder) {
+      highestBidder.monySpent -= auctionItem.currentBid
+      highestBidder.auctionWon -= 1
+      await highestBidder.save()
+    }
   }
 
+  auctionItem = await Auction.findByIdAndUpdate(
+    auctionId,
+    {
+      startTime: newStartTime,
+      endTime: newEndTime,
+      bids: [],
+      commissionCalculated: false,
+      currentBid: 0,
+      highestBidder: null,
+    },
+    { new: true, runValidators: true },
+  )
 
+  await Bid.deleteMany({ auctionItem: auctionItem._id })
 
-  data.bids = []
-  data.commissionCalculated = false
-  data.currentBid = 0;
-  data.highestBidder = null;
-  auctionItem = await Auction.findByIdAndUpdate(auctionId, data, {
-    new: true,
-    runValidators: true,
-    useFindAndModify: false,
-  })
-  await Bid.deleteMany({auctionItem : auctionItem._id})
-  let createdBy = await User.findById(req.user._id)
+  const createdBy = await User.findById(req.user._id)
   createdBy.unpaidCommission = 0
   await createdBy.save()
+
   res.status(200).json({
     success: true,
-    message: `Auction republished and will be active on ${req.body.startTime}`,
-    // createdBy
+    message: `Auction republished and will be active at ${startTime}`,
   })
 })
