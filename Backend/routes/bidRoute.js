@@ -1,6 +1,6 @@
 import express from "express";
 import { isAuthenticated, isAuthorized } from "../midellware/auth.js";
-import { placedItem } from "../constrollers/bidControler.js";
+import { placedItem } from "../controllers/bidControler.js";
 import { checkAuctionEndTime } from "../midellware/checkAuctionEndTime.js";
 
 const routers = express.Router()

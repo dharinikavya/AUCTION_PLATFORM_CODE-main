@@ -1,5 +1,5 @@
 import express from "express";
-import { fetchLeaderboard, getUserProfile, login, logout, register } from "../constrollers/userControler.js";
+import { fetchLeaderboard, getUserProfile, login, logout, register } from "../controllers/userControler.js";
 import { isAuthenticated } from "../midellware/auth.js";
 
 const routers = express.Router()

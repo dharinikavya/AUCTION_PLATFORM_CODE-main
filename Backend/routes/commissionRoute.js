@@ -1,6 +1,6 @@
 import express from "express";
 import { isAuthenticated, isAuthorized } from "../midellware/auth.js";
-import { proofCommission } from "../constrollers/commissionControler.js";
+import { proofCommission } from "../controllers/commissionControler.js";
 
 const route = express.Router()
 
