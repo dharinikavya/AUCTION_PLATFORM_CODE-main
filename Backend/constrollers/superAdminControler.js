@@ -87,7 +87,7 @@ export const fetchAllUsers = catchAsyncError(async (req, res, next) => {
       $group: {
         _id: {
           month: { $month: '$createdAt' },
-          year: { $month: '$createdAt' },
+          year: { $year: '$createdAt' },
           role: '$role',
         },
         count: { $sum: 1 },

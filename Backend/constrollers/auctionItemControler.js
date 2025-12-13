@@ -6,6 +6,7 @@ import { v2 as cloudinary } from 'cloudinary'
 import { catchAsyncError } from '../midellware/catchAsyncError.js'
 import mongoose from 'mongoose'
 
+/* ================= CREATE AUCTION ================= */
 export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
   if (!req.files || Object.keys(req.files).length === 0) {
     return next(new ErrorHandler('Auction item image required', 400))
@@ -39,7 +40,11 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler('Please provide all details', 401))
   }
 
-  if (new Date(startTime) < new Date()) {
+  const now = new Date()
+  const start = new Date(startTime)
+  const end = new Date(endTime)
+
+  if (start < now) {
     return next(
       new ErrorHandler(
         'Auction starting time must be greater than present time',
@@ -48,7 +53,7 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
     )
   }
 
-  if (new Date(startTime) >= new Date(endTime)) {
+  if (start >= end) {
     return next(
       new ErrorHandler(
         'Auction starting time must be less than ending time',
@@ -57,10 +62,11 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
     )
   }
 
-  // ✅ FIXED ACTIVE AUCTION CHECK
+  /* ===== ✅ CORRECT ACTIVE AUCTION CHECK ===== */
   const alreadyOneAuctionActive = await Auction.findOne({
     createdBy: req.user._id,
-    endTime: { $gt: new Date() },
+    startTime: { $lte: now },
+    endTime: { $gt: now },
   })
 
   if (alreadyOneAuctionActive) {
@@ -69,64 +75,52 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
     )
   }
 
-  try {
-    const cloudinaryResponse = await cloudinary.uploader.upload(
-      image.tempFilePath,
-    )
+  /* ===== Upload Image ===== */
+  const cloudinaryResponse = await cloudinary.uploader.upload(
+    image.tempFilePath,
+  )
 
-    if (!cloudinaryResponse || cloudinaryResponse.error) {
-      return next(
-        new ErrorHandler(
-          cloudinaryResponse.error ||
-            'Failed to upload auction image to Cloudinary',
-          400,
-        ),
-      )
-    }
-
-    const auctionItem = await Auction.create({
-      title,
-      description,
-      condition,
-      startingBid,
-      category,
-      startTime,
-      endTime,
-      image: {
-        public_id: cloudinaryResponse.public_id,
-        url: cloudinaryResponse.secure_url,
-      },
-      createdBy: req.user._id,
-    })
-
-    res.status(201).json({
-      success: true,
-      message: `Auction item created and will be listed at ${startTime}`,
-      auctionItem,
-    })
-  } catch (error) {
+  if (!cloudinaryResponse) {
     return next(
-      new ErrorHandler(error.message || 'Failed to create auction', 500),
+      new ErrorHandler('Failed to upload image to Cloudinary', 400)
     )
   }
+
+  const auctionItem = await Auction.create({
+    title,
+    description,
+    condition,
+    startingBid,
+    category,
+    startTime: start,
+    endTime: end,
+    image: {
+      public_id: cloudinaryResponse.public_id,
+      url: cloudinaryResponse.secure_url,
+    },
+    createdBy: req.user._id,
+  })
+
+  res.status(201).json({
+    success: true,
+    message: `Auction item created successfully`,
+    auctionItem,
+  })
 })
 
-export const getAllAuctionItem = catchAsyncError(async (req, res, next) => {
+/* ================= GET ALL AUCTIONS ================= */
+export const getAllAuctionItem = catchAsyncError(async (req, res) => {
   const items = await Auction.find()
-  res.status(200).json({
-    success: true,
-    items,
-  })
+  res.status(200).json({ success: true, items })
 })
 
-export const getMyAuctionItem = catchAsyncError(async (req, res, next) => {
+/* ================= GET MY AUCTIONS ================= */
+export const getMyAuctionItem = catchAsyncError(async (req, res) => {
   const items = await Auction.find({ createdBy: req.user._id })
-  res.status(200).json({
-    success: true,
-    items,
-  })
+  res.status(200).json({ success: true, items })
 })
 
+/* ================= GET AUCTION DETAILS ================= */
 export const getAuctionDetails = catchAsyncError(async (req, res, next) => {
   const auctionId = req.params.id
 
@@ -149,6 +143,7 @@ export const getAuctionDetails = catchAsyncError(async (req, res, next) => {
   })
 })
 
+/* ================= DELETE AUCTION ================= */
 export const removeFromAuction = catchAsyncError(async (req, res, next) => {
   const auctionId = req.params.id
 
@@ -170,6 +165,7 @@ export const removeFromAuction = catchAsyncError(async (req, res, next) => {
   })
 })
 
+/* ================= REPUBLISH AUCTION ================= */
 export const republishItem = catchAsyncError(async (req, res, next) => {
   const auctionId = req.params.id
   const { startTime, endTime } = req.body
@@ -197,54 +193,22 @@ export const republishItem = catchAsyncError(async (req, res, next) => {
   const newStartTime = new Date(startTime)
   const newEndTime = new Date(endTime)
 
-  if (newStartTime < new Date()) {
-    return next(
-      new ErrorHandler(
-        'Auction starting time must be greater than present time',
-        400,
-      ),
-    )
-  }
-
-  if (newStartTime >= newEndTime) {
-    return next(
-      new ErrorHandler(
-        'Auction starting time must be less than ending time',
-        400,
-      ),
-    )
-  }
-
-  if (auctionItem.highestBidder) {
-    const highestBidder = await User.findById(auctionItem.highestBidder)
-    if (highestBidder) {
-      highestBidder.monySpent -= auctionItem.currentBid
-      highestBidder.auctionWon -= 1
-      await highestBidder.save()
-    }
-  }
-
   auctionItem = await Auction.findByIdAndUpdate(
     auctionId,
     {
       startTime: newStartTime,
       endTime: newEndTime,
       bids: [],
-      commissionCalculated: false,
       currentBid: 0,
       highestBidder: null,
     },
-    { new: true, runValidators: true },
+    { new: true },
   )
 
   await Bid.deleteMany({ auctionItem: auctionItem._id })
 
-  const createdBy = await User.findById(req.user._id)
-  createdBy.unpaidCommission = 0
-  await createdBy.save()
-
   res.status(200).json({
     success: true,
-    message: `Auction republished and will be active at ${startTime}`,
+    message: 'Auction republished successfully',
   })
 })
