@@ -1,16 +1,16 @@
-import { User } from '../models/userSchema.js'
 import { catchAsyncError } from '../midellware/catchAsyncError.js'
-import ErrorHandler from '../midellware/error.js'
+
+/*
+|--------------------------------------------------------------------------
+| 🚫 COMMISSION CHECK DISABLED (TEMPORARY)
+|--------------------------------------------------------------------------
+| This middleware is intentionally bypassed to allow
+| auction creation without checking unpaid commission.
+| Useful for development, testing, and demo purposes.
+|--------------------------------------------------------------------------
+*/
 
 export const trackCommissionStatus = catchAsyncError(async (req, res, next) => {
-  const user = await User.findById(req.user._id)
-  if (user.unpaidCommission > 0) {
-    return next(
-      new ErrorHandler(
-        'You have unpaid commission pay then before posting a new auction.',
-        400,
-      ),
-    );
-  }
+  // ✅ Skip commission validation completely
   next()
 })
