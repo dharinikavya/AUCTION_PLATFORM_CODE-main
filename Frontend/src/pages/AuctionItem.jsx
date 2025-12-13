@@ -181,7 +181,7 @@ const AuctionItem = () => {
                 </>
               ) : new Date(auctionDetail.startTime) > Date.now() ? (
                 <p className="text-white font-semibold text-xl">
-                  Auction is Not Startet Yet
+                  Auction is Not Started Yet
                 </p>
               ) : (
                 <p className="text-slate-400 font-semibold text-xl">

@@ -8,174 +8,149 @@ const userSlice = createSlice({
   initialState: {
     loading: false,
     isAuthenticated: false,
-    user: {},
+    user: null,
     leaderboard: [],
   },
   reducers: {
-    registerRequest(state, action) {
-      ;(state.loading = true),
-        (state.isAuthenticated = false),
-        (state.user = {})
+    /* ================= AUTH ================= */
+    registerRequest(state) {
+      state.loading = true
     },
     registerSuccess(state, action) {
-      ;(state.loading = false),
-        (state.isAuthenticated = true),
-        (state.user = action.payload.user)
+      state.loading = false
+      state.isAuthenticated = true
+      state.user = action.payload.user
     },
-    registerFailed(state, action) {
-      ;(state.loading = false),
-        (state.isAuthenticated = false),
-        (state.user = {})
+    registerFailed(state) {
+      state.loading = false
+      state.isAuthenticated = false
+      state.user = null
     },
 
-    loginRequest(state, action) {
-      ;(state.loading = true),
-        (state.isAuthenticated = false),
-        (state.user = {})
+    loginRequest(state) {
+      state.loading = true
     },
     loginSuccess(state, action) {
-      ;(state.loading = false),
-        (state.isAuthenticated = true),
-        (state.user = action.payload.user)
+      state.loading = false
+      state.isAuthenticated = true
+      state.user = action.payload.user
     },
-    loginFailed(state, action) {
-      ;(state.loading = false),
-        (state.isAuthenticated = false),
-        (state.user = {})
-    },
-
-
-
-    fetchLeaderBoardRequest(state,action){
-      state.loading=true
-      state.leaderboard = []
-    },
-    fetchLeaderBoardSuccess(state,action){
-      state.loading=false
-      state.leaderboard = action.payload
-    },
-    fetchLeaderBoardFaild(state,action){
-      state.loading=false
-      state.leaderboard = []
+    loginFailed(state) {
+      state.loading = false
+      state.isAuthenticated = false
+      state.user = null
     },
 
+    logoutSuccess(state) {
+      state.isAuthenticated = false
+      state.user = null
+    },
 
-    fetchUserRequest(state, action) {
-      ;(state.loading = true),
-        (state.isAuthenticated = false),
-        (state.user = {})
+    /* ================= USER ================= */
+    fetchUserRequest(state) {
+      state.loading = true
     },
     fetchUserSuccess(state, action) {
-      ;(state.loading = false),
-        (state.isAuthenticated = true),
-        (state.user = action.payload)
+      state.loading = false
+      state.isAuthenticated = true
+      state.user = action.payload
     },
-    fetchUserFailed(state, action) {
-      ;(state.loading = false),
-        (state.isAuthenticated = false),
-        (state.user = {})
+    fetchUserFailed(state) {
+      state.loading = false
+      state.isAuthenticated = false
+      state.user = null
     },
 
-    logoutSuccess(state, action) {
-      state.isAuthenticated = false
-      state.user = {}
+    /* ================= LEADERBOARD ================= */
+    fetchLeaderBoardRequest(state) {
+      state.loading = true
     },
-    logoutFaild(state, action) {
+    fetchLeaderBoardSuccess(state, action) {
       state.loading = false
-      state.isAuthenticated = state.isAuthenticated
-      state.user = state.user
+      state.leaderboard = action.payload
     },
-    clearAllErrors(state, action) {
-      state.user = state.user
-      state.isAuthenticated = state.isAuthenticated
-      state.leaderboard = state.leaderboard
+    fetchLeaderBoardFailed(state) {
       state.loading = false
+      state.leaderboard = []
     },
   },
 })
 
-// register
+/* ================= REGISTER ================= */
 export const register = (formData) => async (dispatch) => {
   dispatch(userSlice.actions.registerRequest())
   try {
-    const { data } = await axios.post(`${USER_API_POINT}/register`, formData, {
-      withCredentials: true,
-      headers: { 'Content-Type': 'multipart/form-data' },
-    })
+    const { data } = await axios.post(
+      `${USER_API_POINT}/register`,
+      formData,
+      {
+        withCredentials: true,
+        headers: { 'Content-Type': 'multipart/form-data' },
+      }
+    )
     dispatch(userSlice.actions.registerSuccess(data))
-    toast.success(data?.message)
-    dispatch(userSlice.actions.clearAllErrors())
+    toast.success(data.message)
   } catch (error) {
-    console.log(error)
     dispatch(userSlice.actions.registerFailed())
     toast.error(error?.response?.data?.message)
-    dispatch(userSlice.actions.clearAllErrors())
   }
 }
-// login
+
+/* ================= LOGIN ================= */
 export const login = ({ email, password }) => async (dispatch) => {
   dispatch(userSlice.actions.loginRequest())
   try {
     const { data } = await axios.post(
       `${USER_API_POINT}/login`,
-      { email, password },   // ✅ JSON BODY
+      { email, password },
       { withCredentials: true }
     )
-
     dispatch(userSlice.actions.loginSuccess(data))
     toast.success(data.message)
-    dispatch(userSlice.actions.clearAllErrors())
   } catch (error) {
     dispatch(userSlice.actions.loginFailed())
     toast.error(error?.response?.data?.message)
-    dispatch(userSlice.actions.clearAllErrors())
   }
 }
 
-// logout
+/* ================= LOGOUT ================= */
 export const logout = () => async (dispatch) => {
   try {
-    const response = await axios.get(`${USER_API_POINT}/logout`, {
+    const { data } = await axios.get(`${USER_API_POINT}/logout`, {
       withCredentials: true,
     })
     dispatch(userSlice.actions.logoutSuccess())
-    toast.success(response?.data?.message)
-    dispatch(userSlice.actions.clearAllErrors())
+    toast.success(data.message)
   } catch (error) {
-    dispatch(userSlice.actions.logoutFaild())
     toast.error(error?.response?.data?.message)
-    dispatch(userSlice.actions.clearAllErrors())
   }
 }
-// fetch users
+
+/* ================= FETCH USER ================= */
 export const fetchUser = () => async (dispatch) => {
   dispatch(userSlice.actions.fetchUserRequest())
   try {
-    const response = await axios.get(`${USER_API_POINT}/me`, {
+    const { data } = await axios.get(`${USER_API_POINT}/me`, {
       withCredentials: true,
     })
-    dispatch(userSlice.actions.fetchUserSuccess(response.data.user))
-    dispatch(userSlice.actions.clearAllErrors())
+    dispatch(userSlice.actions.fetchUserSuccess(data.user))
   } catch (error) {
     dispatch(userSlice.actions.fetchUserFailed())
-    dispatch(userSlice.actions.clearAllErrors())
-    console.warn(error)
   }
 }
-// export fetchleaderBoard
+
+/* ================= FETCH LEADERBOARD ================= */
 export const fetchLeaderBoard = () => async (dispatch) => {
   dispatch(userSlice.actions.fetchLeaderBoardRequest())
   try {
-    const response = await axios.get(`${USER_API_POINT}/leaderboard`, {
+    const { data } = await axios.get(`${USER_API_POINT}/leaderboard`, {
       withCredentials: true,
     })
-    // console.log(response.data)
-    dispatch(userSlice.actions.fetchLeaderBoardSuccess(response.data.leaderboard))
-    dispatch(userSlice.actions.clearAllErrors())
+    dispatch(
+      userSlice.actions.fetchLeaderBoardSuccess(data.leaderboard)
+    )
   } catch (error) {
-    dispatch(userSlice.actions.fetchLeaderBoardFaild())
-    console.warn(error)
-    dispatch(userSlice.actions.clearAllErrors())
+    dispatch(userSlice.actions.fetchLeaderBoardFailed())
   }
 }
 

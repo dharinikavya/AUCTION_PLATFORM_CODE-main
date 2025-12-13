@@ -2,7 +2,6 @@ import cron from 'node-cron'
 import { Auction } from '../models/auctionSchema.js'
 import { User } from '../models/userSchema.js'
 import { Bid } from '../models/bidSchema.js'
-import { calculateCommission } from '../controllers/commissionControler.js'
 
 export const endedAuctionCron = () => {
   cron.schedule('*/1 * * * *', async () => {
@@ -10,22 +9,17 @@ export const endedAuctionCron = () => {
 
     const endedAuctions = await Auction.find({
       endTime: { $lt: now },
-      commissionCalculated: false,
       status: 'ACTIVE',
     })
 
     for (const auction of endedAuctions) {
       try {
-        const commissionAmount = await calculateCommission(auction._id)
-
         const highestBid = await Bid.findOne({
           auctionItem: auction._id,
         }).sort({ amount: -1 })
 
-        const auctioner = await User.findById(auction.createdBy)
-
+        /* 🛑 NO BIDS CASE */
         if (!highestBid) {
-          // No bids, just mark auction as ended
           auction.status = 'ENDED'
           auction.commissionCalculated = true
           await auction.save()
@@ -33,8 +27,9 @@ export const endedAuctionCron = () => {
         }
 
         const bidder = await User.findById(highestBid.bidder)
+        const auctioner = await User.findById(auction.createdBy)
 
-        // Update Auction
+        /* 🏆 UPDATE AUCTION */
         auction.highestBidder = bidder._id
         auction.winningBidder = bidder._id
         auction.winningBidAmount = highestBid.amount
@@ -43,7 +38,7 @@ export const endedAuctionCron = () => {
         auction.commissionCalculated = true
         await auction.save()
 
-        // Update Bidder Profile
+        /* 📊 UPDATE BIDDER (LEADERBOARD SOURCE) */
         bidder.auctionWon += 1
         bidder.moneySpent += highestBid.amount
         bidder.wonAuctions.push({
@@ -56,17 +51,16 @@ export const endedAuctionCron = () => {
         })
         await bidder.save()
 
-        // Notify Auctioner
-        auctioner.unpaidCommission += commissionAmount
+        /* 📢 NOTIFY AUCTIONER */
         auctioner.notifications.push({
           message: `🏆 Your auction "${auction.title}" ended. Winner: ${bidder.userName} (₹${highestBid.amount})`,
           auction: auction._id,
         })
         await auctioner.save()
 
-        console.log(`✅ Auction processed: ${auction.title}`)
+        console.log(`✅ Auction ended & leaderboard updated: ${auction.title}`)
       } catch (error) {
-        console.error('❌ Error in ended auction cron:', error.message)
+        console.error('❌ Cron error:', error.message)
       }
     }
   })
