@@ -5,14 +5,15 @@ import {
   getAuctionDetails,
   getMyAuctionItem,
   removeFromAuction,
-  republishItem
-} from "../controllers/auctionItemControler.js";
+  republishItem,
+  finalizeAuction
+} from "../controllers/auctionItemController.js";
 import { isAuthenticated, isAuthorized } from "../midellware/auth.js";
 import { trackCommissionStatus } from "../midellware/trackCommissionStatus.js";
 
 const route = express.Router();
 
-// CREATE AUCTION ITEM — Only Auctioner or Super Admin
+// CREATE AUCTION
 route.post(
   "/create",
   isAuthenticated,
@@ -21,13 +22,13 @@ route.post(
   addNewAuctionItem
 );
 
-// PUBLIC — All items
+// GET ALL AUCTIONS
 route.get("/allitems", getAllAuctionItem);
 
-// GET DETAILS — User must be logged in
+// GET AUCTION DETAILS
 route.get("/auction/:id", isAuthenticated, getAuctionDetails);
 
-// MY ITEMS — Only Auctioner or Super Admin
+// GET MY AUCTIONS
 route.get(
   "/myitems",
   isAuthenticated,
@@ -35,7 +36,7 @@ route.get(
   getMyAuctionItem
 );
 
-// DELETE ITEM — Only Auctioner or Super Admin
+// DELETE ENDED AUCTION
 route.delete(
   "/delete/:id",
   isAuthenticated,
@@ -43,12 +44,15 @@ route.delete(
   removeFromAuction
 );
 
-// REPUBLISH — Only Auctioner or Super Admin
+// REPUBLISH AUCTION
 route.put(
   "/item/republish/:id",
   isAuthenticated,
   isAuthorized("Auctioner", "Super Admin"),
   republishItem
 );
+
+// FINALIZE AUCTIONS MANUALLY
+route.put("/finalize", isAuthenticated, isAuthorized("Super Admin"), finalizeAuction);
 
 export default route;

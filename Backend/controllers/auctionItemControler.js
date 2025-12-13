@@ -47,9 +47,6 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
   }
 
   const cloudRes = await cloudinary.uploader.upload(image.tempFilePath);
-  if (!cloudRes) {
-    return next(new ErrorHandler("Failed to upload image", 400));
-  }
 
   const auctionItem = await Auction.create({
     title,
@@ -72,7 +69,13 @@ export const addNewAuctionItem = catchAsyncError(async (req, res, next) => {
 
 /* ================= GET ALL AUCTIONS ================= */
 export const getAllAuctionItem = catchAsyncError(async (req, res) => {
-  const items = await Auction.find();
+  const items = await Auction.find().sort({ startTime: -1 });
+  res.status(200).json({ success: true, items });
+});
+
+/* ================= GET MY AUCTIONS ================= */
+export const getMyAuctionItem = catchAsyncError(async (req, res) => {
+  const items = await Auction.find({ createdBy: req.user._id }).sort({ startTime: -1 });
   res.status(200).json({ success: true, items });
 });
 
@@ -85,27 +88,16 @@ export const getAuctionDetails = catchAsyncError(async (req, res, next) => {
   }
 
   const auctionItem = await Auction.findById(auctionId);
-
   if (!auctionItem) {
     return next(new ErrorHandler("Auction not found", 404));
   }
 
   const bidders = auctionItem.bids.sort((a, b) => b.amount - a.amount);
 
-  res.status(200).json({
-    success: true,
-    bidders,
-    auctionItem,
-  });
+  res.status(200).json({ success: true, auctionItem, bidders });
 });
 
-/* ================= GET MY AUCTIONS ================= */
-export const getMyAuctionItem = catchAsyncError(async (req, res) => {
-  const items = await Auction.find({ createdBy: req.user._id });
-  res.status(200).json({ success: true, items });
-});
-
-/* ================= DELETE AUCTION ================= */
+/* ================= DELETE AUCTION (ENDED ONLY) ================= */
 export const removeFromAuction = catchAsyncError(async (req, res, next) => {
   const auctionId = req.params.id;
 
@@ -114,16 +106,23 @@ export const removeFromAuction = catchAsyncError(async (req, res, next) => {
   }
 
   const auctionItem = await Auction.findById(auctionId);
-
   if (!auctionItem) {
     return next(new ErrorHandler("Auction not found", 404));
+  }
+
+  if (auctionItem.status !== "ENDED") {
+    return next(new ErrorHandler("Cannot delete an active auction", 400));
+  }
+
+  if (!req.user._id.equals(auctionItem.createdBy) && req.user.role !== "Super Admin") {
+    return next(new ErrorHandler("You are not authorized to delete this auction", 403));
   }
 
   await auctionItem.deleteOne();
 
   res.status(200).json({
     success: true,
-    message: "Auction item deleted successfully",
+    message: "Ended auction deleted successfully",
   });
 });
 
@@ -141,13 +140,12 @@ export const republishItem = catchAsyncError(async (req, res, next) => {
   }
 
   let auctionItem = await Auction.findById(auctionId);
-
   if (!auctionItem) {
     return next(new ErrorHandler("Auction not found", 404));
   }
 
-  if (new Date(auctionItem.endTime) > new Date()) {
-    return next(new ErrorHandler("Auction is already active, cannot republish", 400));
+  if (auctionItem.status === "ACTIVE") {
+    return next(new ErrorHandler("Auction is still active, cannot republish", 400));
   }
 
   const newStartTime = new Date(startTime);
@@ -155,7 +153,16 @@ export const republishItem = catchAsyncError(async (req, res, next) => {
 
   auctionItem = await Auction.findByIdAndUpdate(
     auctionId,
-    { startTime: newStartTime, endTime: newEndTime, bids: [], currentBid: 0, highestBidder: null },
+    {
+      startTime: newStartTime,
+      endTime: newEndTime,
+      bids: [],
+      currentBid: 0,
+      highestBidder: null,
+      winningBidder: null,
+      winningBidAmount: 0,
+      status: "ACTIVE",
+    },
     { new: true }
   );
 
@@ -164,16 +171,18 @@ export const republishItem = catchAsyncError(async (req, res, next) => {
   res.status(200).json({
     success: true,
     message: "Auction republished successfully",
+    auctionItem,
   });
 });
 
-/* ================= FINALIZE AUCTION ================= */
+/* ================= FINALIZE AUCTIONS ================= */
 export const finalizeAuction = catchAsyncError(async (req, res, next) => {
   const now = new Date();
   const auctions = await Auction.find({ endTime: { $lte: now }, status: "ACTIVE" });
 
   for (const auction of auctions) {
     auction.status = "ENDED";
+
     if (auction.highestBidder) {
       auction.winningBidder = auction.highestBidder;
       auction.winningBidAmount = auction.currentBid;
@@ -181,7 +190,11 @@ export const finalizeAuction = catchAsyncError(async (req, res, next) => {
       await User.findByIdAndUpdate(auction.highestBidder, {
         $inc: { moneySpent: auction.currentBid, auctionWon: 1 },
       });
+
+      // Optional: send notification to winner (pseudo-code)
+      // sendNotification(auction.highestBidder, `You won auction ${auction.title}`);
     }
+
     await auction.save();
   }
 
