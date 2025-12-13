@@ -6,7 +6,7 @@ import {
   getMyAuctionItem,
   removeFromAuction,
   republishItem
-} from "../controllers/auctionItemControler.js";
+} from "../controllers/auctionController.js";
 import { isAuthenticated, isAuthorized } from "../midellware/auth.js";
 import { trackCommissionStatus } from "../midellware/trackCommissionStatus.js";
 
