@@ -113,23 +113,25 @@ export const register = (formData) => async (dispatch) => {
   }
 }
 // login
-export const login = (formData) => async (dispatch) => {
+export const login = ({ email, password }) => async (dispatch) => {
   dispatch(userSlice.actions.loginRequest())
   try {
-    const { data } = await axios.post(`${USER_API_POINT}/login`, formData, {
-      withCredentials: true,
-      headers: { 'Content-Type': 'application/json' },
-    })
+    const { data } = await axios.post(
+      `${USER_API_POINT}/login`,
+      { email, password },   // ✅ JSON BODY
+      { withCredentials: true }
+    )
+
     dispatch(userSlice.actions.loginSuccess(data))
-    toast.success(data?.message)
+    toast.success(data.message)
     dispatch(userSlice.actions.clearAllErrors())
   } catch (error) {
-    console.log(error)
     dispatch(userSlice.actions.loginFailed())
     toast.error(error?.response?.data?.message)
     dispatch(userSlice.actions.clearAllErrors())
   }
 }
+
 // logout
 export const logout = () => async (dispatch) => {
   try {

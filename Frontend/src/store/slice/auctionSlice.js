@@ -130,19 +130,26 @@ export const getAuctionDetail = (id) => async (dispatch) => {
 export const createAuction = (formData) => async (dispatch) => {
   dispatch(auctionSlice.actions.createAuctionRequest())
   try {
-    const { data } = await axios.post(`${AUCTION_API_POINT}/create`, formData, {
-      withCredentials: true,
-      headers: { 'Content-Type': 'multiprt/form-data' },
-    })
+    const { data } = await axios.post(
+      `${AUCTION_API_POINT}/create`,
+      formData,
+      {
+        withCredentials: true,
+        headers: {
+          "Content-Type": "multipart/form-data", // ✅ FIXED TYPO
+        },
+      }
+    )
+
     toast.success(data.message)
     dispatch(auctionSlice.actions.createAuctionSuccess())
     dispatch(getAllAuctionItem())
   } catch (error) {
     dispatch(auctionSlice.actions.createAuctionFaild())
-    console.log(error)
     toast.error(error?.response?.data?.message)
   }
 }
+
 // get my auctions
 export const getMyAuctionItem = () => async (dispatch) => {
   dispatch(auctionSlice.actions.getMyAuctionItemsRequest())
