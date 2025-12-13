@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
-import { fetchLeaderBoard } from '@/redux/slices/userSlice'
+import { fetchLeaderBoard } from '@/store/slice/userSlice'  // ✅ corrected path
 import { Link } from 'react-router-dom'
 
 const LeaderBoard = () => {
@@ -39,9 +39,7 @@ const LeaderBoard = () => {
           <tbody className="text-gray-700">
             {leaderboard.map((user, index) => (
               <tr key={user._id} className="border-b">
-                <td className="py-2 px-4 font-semibold">
-                  {index + 1}
-                </td>
+                <td className="py-2 px-4 font-semibold">{index + 1}</td>
 
                 <td className="py-2 px-4">
                   <img
