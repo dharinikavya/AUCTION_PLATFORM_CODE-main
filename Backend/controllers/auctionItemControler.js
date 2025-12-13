@@ -97,7 +97,7 @@ export const getAuctionDetails = catchAsyncError(async (req, res, next) => {
   res.status(200).json({ success: true, auctionItem, bidders });
 });
 
-/* ================= DELETE AUCTION (ENDED ONLY) ================= */
+/* ================= DELETE AUCTION (ACTIVE OR ENDED) ================= */
 export const removeFromAuction = catchAsyncError(async (req, res, next) => {
   const auctionId = req.params.id;
 
@@ -110,19 +110,31 @@ export const removeFromAuction = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Auction not found", 404));
   }
 
-  if (auctionItem.status !== "ENDED") {
-    return next(new ErrorHandler("Cannot delete an active auction", 400));
-  }
-
+  // Only auctioner or Super Admin can delete
   if (!req.user._id.equals(auctionItem.createdBy) && req.user.role !== "Super Admin") {
     return next(new ErrorHandler("You are not authorized to delete this auction", 403));
+  }
+
+  // Optional: Cancel active auction logic
+  if (auctionItem.status === "ACTIVE") {
+    if (auctionItem.highestBidder) {
+      await User.findByIdAndUpdate(auctionItem.highestBidder, {
+        $inc: { moneySpent: -auctionItem.currentBid }, // Refund
+      });
+      await Bid.deleteMany({ auctionItem: auctionItem._id }); // Remove bids
+    }
+  }
+
+  // Delete auction image from cloudinary
+  if (auctionItem.image?.public_id) {
+    await cloudinary.uploader.destroy(auctionItem.image.public_id);
   }
 
   await auctionItem.deleteOne();
 
   res.status(200).json({
     success: true,
-    message: "Ended auction deleted successfully",
+    message: "Auction deleted successfully",
   });
 });
 

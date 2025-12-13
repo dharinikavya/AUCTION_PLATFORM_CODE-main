@@ -1,50 +1,53 @@
-import * as React from "react"
+import React from "react";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "./Card";
 
-import { cn } from "@/lib/utils"
+const AuctionCard = ({ auction, token, onDelete }) => {
+  const handleDelete = async () => {
+    if (!window.confirm("Are you sure you want to delete this auction?")) return;
 
-const Card = React.forwardRef(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("rounded-lg border bg-card text-card-foreground shadow-sm", className)}
-    {...props} />
-))
-Card.displayName = "Card"
+    try {
+      const res = await fetch(`https://your-backend.com/api/auctions/delete/${auction._id}`, {
+        method: "DELETE",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
+        },
+      });
 
-const CardHeader = React.forwardRef(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex flex-col space-y-1.5 p-6", className)}
-    {...props} />
-))
-CardHeader.displayName = "CardHeader"
+      const data = await res.json();
+      if (data.success) {
+        alert("Auction deleted successfully");
+        onDelete(auction._id);
+      } else {
+        alert(data.message);
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Failed to delete auction");
+    }
+  };
 
-const CardTitle = React.forwardRef(({ className, ...props }, ref) => (
-  <h3
-    ref={ref}
-    className={cn("text-2xl font-semibold leading-none tracking-tight", className)}
-    {...props} />
-))
-CardTitle.displayName = "CardTitle"
+  return (
+    <Card className="mb-4">
+      <CardHeader>
+        <CardTitle>{auction.title}</CardTitle>
+        <CardDescription>Status: {auction.status}</CardDescription>
+      </CardHeader>
+      <CardContent>
+        <p>{auction.description}</p>
+        <p>Starting Bid: ₹{auction.startingBid}</p>
+        <p>Current Bid: ₹{auction.currentBid}</p>
+      </CardContent>
+      <CardFooter>
+        <button
+          onClick={handleDelete}
+          className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700 transition"
+        >
+          Delete
+        </button>
+      </CardFooter>
+    </Card>
+  );
+};
 
-const CardDescription = React.forwardRef(({ className, ...props }, ref) => (
-  <p
-    ref={ref}
-    className={cn("text-sm text-muted-foreground", className)}
-    {...props} />
-))
-CardDescription.displayName = "CardDescription"
-
-const CardContent = React.forwardRef(({ className, ...props }, ref) => (
-  <div ref={ref} className={cn("p-6 pt-0", className)} {...props} />
-))
-CardContent.displayName = "CardContent"
-
-const CardFooter = React.forwardRef(({ className, ...props }, ref) => (
-  <div
-    ref={ref}
-    className={cn("flex items-center p-6 pt-0", className)}
-    {...props} />
-))
-CardFooter.displayName = "CardFooter"
-
-export { Card, CardHeader, CardFooter, CardTitle, CardDescription, CardContent }
+export default AuctionCard;

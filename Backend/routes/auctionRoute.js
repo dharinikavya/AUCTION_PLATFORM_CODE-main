@@ -13,7 +13,7 @@ import { trackCommissionStatus } from "../midellware/trackCommissionStatus.js";
 
 const route = express.Router();
 
-// CREATE AUCTION — Only Auctioner or Super Admin
+// CREATE AUCTION
 route.post(
   "/create",
   isAuthenticated,
@@ -22,13 +22,13 @@ route.post(
   addNewAuctionItem
 );
 
-// GET ALL AUCTIONS — Public
+// GET ALL AUCTIONS
 route.get("/allitems", getAllAuctionItem);
 
-// GET AUCTION DETAILS — Logged in users
+// GET AUCTION DETAILS
 route.get("/auction/:id", isAuthenticated, getAuctionDetails);
 
-// GET MY AUCTIONS — Only Auctioner or Super Admin
+// GET MY AUCTIONS
 route.get(
   "/myitems",
   isAuthenticated,
@@ -36,7 +36,7 @@ route.get(
   getMyAuctionItem
 );
 
-// DELETE ENDED AUCTION — Only creator or Super Admin
+// DELETE AUCTION (ACTIVE or ENDED)
 route.delete(
   "/delete/:id",
   isAuthenticated,
@@ -44,7 +44,7 @@ route.delete(
   removeFromAuction
 );
 
-// REPUBLISH AUCTION — Only Auctioner or Super Admin
+// REPUBLISH AUCTION
 route.put(
   "/item/republish/:id",
   isAuthenticated,
@@ -52,12 +52,7 @@ route.put(
   republishItem
 );
 
-// FINALIZE AUCTIONS MANUALLY — Super Admin only
-route.put(
-  "/finalize",
-  isAuthenticated,
-  isAuthorized("Super Admin"),
-  finalizeAuction
-);
+// FINALIZE AUCTIONS MANUALLY
+route.put("/finalize", isAuthenticated, isAuthorized("Super Admin"), finalizeAuction);
 
 export default route;
