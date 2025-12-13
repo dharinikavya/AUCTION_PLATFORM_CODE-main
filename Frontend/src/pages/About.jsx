@@ -4,27 +4,27 @@ const About = () => {
   const choosThis = [
     {
       title: 'Exclusive High-End Auctions',
-      discription:
+      description:
         'We bring you exclusive access to some of the world’s most sought-after items. From rare vintage cars and exquisite jewelry to high-demand real estate, our platform ensures that you always have the opportunity to invest in the extraordinary.',
     },
     {
       title: 'Unmatched Efficiency',
-      discription:
+      description:
         'With our cutting-edge technology and user-friendly interface, bidding and selling have never been easier. Our platform is optimized to deliver a seamless experience, minimizing delays and maximizing convenience for both buyers and sellers.',
     },
     {
       title: 'Global Reach',
-      discription:
+      description:
         "We connect buyers and sellers from across the globe, giving you the opportunity to access items and buyers you wouldn't find elsewhere. Our platform breaks geographical boundaries, bringing international assets to your fingertips.",
     },
     {
       title: 'Secure Transactions',
-      discription:
+      description:
         'Trust is at the heart of every transaction. With robust security protocols and secure payment gateways, we ensure that your auction experience is protected, efficient, and stress-free.',
     },
     {
       title: 'Expert Support Team',
-      discription:
+      description:
         'Our experienced support team is available to guide you through every step of the auction process. Whether you’re a bidder looking to secure your next investment or a seller listing a high-value item, we provide dedicated assistance to ensure success.',
     },
   ]
@@ -43,12 +43,12 @@ const About = () => {
     {
       title: 'More Value, Less Hassle',
       description:
-        'The more valuable an asset, the more important it is to handle transactions efficiently. At [Your Auction Platform Name], we’ve taken out the unnecessary steps and complicated processes to offer you an experience where you get more value with less effort. Our smart features, automated tools, and professional support make it easier than ever to buy or sell high-end assets at your convenience.',
+        'The more valuable an asset, the more important it is to handle transactions efficiently. At Auctions, we’ve taken out the unnecessary steps and complicated processes to offer you an experience where you get more value with less effort. Our smart features, automated tools, and professional support make it easier than ever to buy or sell high-end assets at your convenience.',
     },
     {
       title: 'Global Reach, Local Expertise',
       description:
-        'We don’t just connect buyers and sellers — we unite a global community of passionate collectors and investors. With users from across the world, [Your Auction Platform Name] ensures that your high-value assets receive maximum exposure. At the same time, our team of local experts offers in-depth knowledge about niche markets, providing guidance to help you make informed decisions.',
+        'We don’t just connect buyers and sellers — we unite a global community of passionate collectors and investors. With users from across the world, Auctions ensures that your high-value assets receive maximum exposure. At the same time, our team of local experts offers in-depth knowledge about niche markets, providing guidance to help you make informed decisions.',
     },
     {
       title: 'Unbeatable Transparency & Trust',
@@ -69,54 +69,45 @@ const About = () => {
           About Us
         </h1>
         <div className="text-xl text-slate-600">
-          Welcome to  Auctions, the ultimate destination for discovering,
-          bidding, and securing valuable assets through the most seamless and
-          transparent online auction experience. At 
-           Auctions, we
-          specialize in offering a diverse range of high-value items, from rare
-          collectibles and luxury goods to real estate and fine art, ensuring
-          that our platform caters to both seasoned investors and first-time
-          bidders alike. Our team is dedicated to curating exclusive auctions
-          with unparalleled efficiency, trust, and expertise, enabling buyers
-          and sellers to engage in a marketplace driven by integrity and
-          excellence.
-          <h1 className="mt-10 mb-4 text-3xl sm:text-2xl font-bold underline">
+          <p>
+            Welcome to Auctions, the ultimate destination for discovering, bidding, and securing valuable assets through the most seamless and transparent online auction experience. At Auctions, we specialize in offering a diverse range of high-value items, from rare collectibles and luxury goods to real estate and fine art, ensuring that our platform caters to both seasoned investors and first-time bidders alike. Our team is dedicated to curating exclusive auctions with unparalleled efficiency, trust, and expertise, enabling buyers and sellers to engage in a marketplace driven by integrity and excellence.
+          </p>
+
+          <h2 className="mt-10 mb-4 text-3xl sm:text-2xl font-bold underline">
             Why Choose Us?
-          </h1>
-          {choosThis.map((v, i) => {
-            return (
-              <div key={i}>
-                <li className="text-black text-2xl font-bold">{v.title}</li>
-                <p>{v.discription}</p>
-              </div>
-            )
-          })}
+          </h2>
+
+          <ul className="list-disc ml-6">
+            {choosThis.map((v, i) => (
+              <li key={i} className="mb-4">
+                <span className="text-black text-2xl font-bold">{v.title}</span>
+                <p>{v.description}</p>
+              </li>
+            ))}
+          </ul>
+
           <h3 className="text-2xl font-bold text-slate-600 my-3">
             Join Us in Redefining Auctions
           </h3>
           <p className="mb-3">
-            At this Auctions, we’re not just conducting auctions — we’re
-            revolutionizing the way high-value assets are traded. With an
-            unwavering commitment to excellence, efficiency, and transparency,
-            we invite you to be a part of our exclusive community of bidders and
-            sellers.
+            At Auctions, we’re not just conducting auctions — we’re revolutionizing the way high-value assets are traded. With an unwavering commitment to excellence, efficiency, and transparency, we invite you to be a part of our exclusive community of bidders and sellers.
           </p>
           <p>
-            Explore our auctions today and take the next step in acquiring rare,
-            valuable, and unique assets through a platform that prioritizes your
-            success.
+            Explore our auctions today and take the next step in acquiring rare, valuable, and unique assets through a platform that prioritizes your success.
           </p>
+
           <h2 className="text-2xl font-bold mt-10 mb-4">
-            Why We're the Best Choice{' '}
+            Why We're the Best Choice
           </h2>
-          {whyBestChoice.map((v, i) => {
-            return (
-              <div key={i}>
-                <li className="font-semibold text-red-950 my-3">{v.title}</li>
+
+          <ul className="list-disc ml-6">
+            {whyBestChoice.map((v, i) => (
+              <li key={i} className="mb-4">
+                <span className="font-semibold text-red-950 my-3">{v.title}</span>
                 <p>{v.description}</p>
-              </div>
-            )
-          })}
+              </li>
+            ))}
+          </ul>
         </div>
       </section>
     </div>

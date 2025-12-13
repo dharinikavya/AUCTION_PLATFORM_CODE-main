@@ -7,15 +7,15 @@ import LeaderBoard from './HomeSubComponante/LeaderBoard'
 
 const Home = () => {
   const HowItWorks = [
-    { title: 'Post Items', description: 'Auctener posts items for bidding' },
-    { title: 'Place bid', description: 'Bidders place bides on listed items' },
+    { title: 'Post Items', description: 'Auctioneer posts items for bidding' },
+    { title: 'Place Bid', description: 'Bidders place bids on listed items' },
     {
       title: 'Win Notification',
-      description: 'Hiegst bidder recuves a winnin email',
+      description: 'Highest bidder receives a winning email with details',
     },
     {
       title: 'Payments and Fees',
-      description: 'Bidder pays; auctioner pays 5% fee',
+      description: 'Bidder makes payment; Auctioneer pays 5% platform fee',
     },
   ]
 
@@ -24,9 +24,9 @@ const Home = () => {
   return (
     <div className="p-5">
       <section className="w-full ml-0 h-fit px-5 pt-20 lg:pl-[320px] flex flex-col min-h-screen py-4 justify-center">
-        <div className="">
+        <div>
           <p className="text-red-300 font-bold text-xl mb-8">
-            Transparency Leads to your Victory
+            Transparency Leads to Your Victory
           </p>
           <h1 className="text-black text-2xl font-bold mb-2 min-[480px]:text-4xl md:text-6xl xl:text-7xl 2xl:text-8xl">
             Transparent Auction
@@ -53,22 +53,22 @@ const Home = () => {
             )}
           </div>
         </div>
+
         <div className="flex flex-col gap-6">
           <h3 className="text-black font-bold text-xl">How It Works</h3>
           <div className="flex flex-col gap-6 md:flex-row md:flex-wrap w-full">
-            {HowItWorks.map((v, i) => {
-              return (
-                <div
-                  className="bg-white flex flex-col gap-2 p-2 rounded-md h-[96px] justify-center md:w-[48%] lg:w-[47%] 2xl:w-[24%] hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
-                  key={i}
-                >
-                  <h5 className="font-bold">{v.title}</h5>
-                  <h5 className="">{v.description}</h5>
-                </div>
-              )
-            })}
+            {HowItWorks.map((v, i) => (
+              <div
+                className="bg-white flex flex-col gap-2 p-2 rounded-md h-[96px] justify-center md:w-[48%] lg:w-[47%] 2xl:w-[24%] hover:shadow-lg transition-all duration-300 hover:scale-[1.02]"
+                key={i}
+              >
+                <h5 className="font-bold">{v.title}</h5>
+                <h5>{v.description}</h5>
+              </div>
+            ))}
           </div>
         </div>
+
         <FeatersAuction />
         <UpCommingsAuctions />
         <LeaderBoard />
