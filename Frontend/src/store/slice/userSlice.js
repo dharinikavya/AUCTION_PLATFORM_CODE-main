@@ -172,4 +172,10 @@ export const logout = () => async (dispatch) => {
 };
 
 export const { resetWinSound } = userSlice.actions;
+/* ✅ EXPORT THUNKS USED BY UI */
+export {
+  fetchLeaderBoard,
+  fetchNotifications,
+  markReadNotifications,
+};
 export default userSlice.reducer;
