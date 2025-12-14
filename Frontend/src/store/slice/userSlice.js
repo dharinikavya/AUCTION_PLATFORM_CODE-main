@@ -3,35 +3,7 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-/* ================= FETCH USER ================= */
-export const fetchUser = createAsyncThunk(
-  "user/fetchUser",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await axios.get(`${USER_API_POINT}/me`, {
-        withCredentials: true,
-      });
-      return data.user;
-    } catch (error) {
-      return rejectWithValue(error.response?.data);
-    }
-  }
-);
-
-/* ================= LEADERBOARD ================= */
-export const fetchLeaderBoard = createAsyncThunk(
-  "user/fetchLeaderBoard",
-  async (_, { rejectWithValue }) => {
-    try {
-      const { data } = await axios.get(`${USER_API_POINT}/leaderboard`);
-      return data.leaderboard;
-    } catch (error) {
-      return rejectWithValue(error.response?.data);
-    }
-  }
-);
-
-/* ================= 🔔 NOTIFICATIONS ================= */
+/* ================= 🔔 NOTIFICATIONS THUNKS ================= */
 export const fetchNotifications = createAsyncThunk(
   "user/fetchNotifications",
   async () => {
@@ -55,6 +27,22 @@ export const markReadNotifications = createAsyncThunk(
   }
 );
 
+/* ================= USER THUNKS ================= */
+export const fetchUser = createAsyncThunk("user/fetchUser", async () => {
+  const { data } = await axios.get(`${USER_API_POINT}/me`, {
+    withCredentials: true,
+  });
+  return data.user;
+});
+
+export const fetchLeaderBoard = createAsyncThunk(
+  "user/fetchLeaderBoard",
+  async () => {
+    const { data } = await axios.get(`${USER_API_POINT}/leaderboard`);
+    return data.leaderboard;
+  }
+);
+
 /* ================= SLICE ================= */
 const userSlice = createSlice({
   name: "user",
@@ -63,17 +51,27 @@ const userSlice = createSlice({
     isAuthenticated: false,
     user: null,
 
+    /* 🏆 Leaderboard */
     leaderboard: [],
 
+    /* 🔔 Notifications */
     notifications: [],
     unreadNotificationCount: 0,
 
+    /* 🔊 Sound trigger */
     playWinSound: false,
   },
 
   reducers: {
-    resetWinSound(state) {
-      state.playWinSound = false;
+    /* ================= AUTH ================= */
+    registerSuccess(state, action) {
+      state.isAuthenticated = true;
+      state.user = action.payload.user;
+    },
+
+    loginSuccess(state, action) {
+      state.isAuthenticated = true;
+      state.user = action.payload.user;
     },
 
     logoutSuccess(state) {
@@ -83,11 +81,16 @@ const userSlice = createSlice({
       state.unreadNotificationCount = 0;
       state.playWinSound = false;
     },
+
+    /* 🔇 RESET SOUND FLAG */
+    resetWinSound(state) {
+      state.playWinSound = false;
+    },
   },
 
   extraReducers: (builder) => {
     builder
-      /* ================= USER ================= */
+      /* ===== FETCH USER ===== */
       .addCase(fetchUser.pending, (state) => {
         state.loading = true;
       })
@@ -102,7 +105,7 @@ const userSlice = createSlice({
         state.user = null;
       })
 
-      /* ================= LEADERBOARD ================= */
+      /* ===== LEADERBOARD ===== */
       .addCase(fetchLeaderBoard.pending, (state) => {
         state.loading = true;
       })
@@ -115,9 +118,14 @@ const userSlice = createSlice({
         state.leaderboard = [];
       })
 
-      /* ================= NOTIFICATIONS ================= */
+      /* ===== FETCH NOTIFICATIONS ===== */
+      .addCase(fetchNotifications.pending, (state) => {
+        state.loading = true;
+      })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
-        const prevIds = state.notifications.map((n) => n._id);
+        state.loading = false;
+
+        const previousIds = state.notifications.map((n) => n._id);
         const incoming = action.payload;
 
         state.notifications = incoming;
@@ -125,9 +133,10 @@ const userSlice = createSlice({
           (n) => !n.isRead
         ).length;
 
+        /* 🔊 Detect NEW WIN notification */
         const hasNewWin = incoming.some(
           (n) =>
-            !prevIds.includes(n._id) &&
+            !previousIds.includes(n._id) &&
             n.message?.toLowerCase().includes("won")
         );
 
@@ -135,7 +144,11 @@ const userSlice = createSlice({
           state.playWinSound = true;
         }
       })
+      .addCase(fetchNotifications.rejected, (state) => {
+        state.loading = false;
+      })
 
+      /* ===== MARK READ ===== */
       .addCase(markReadNotifications.fulfilled, (state) => {
         state.notifications = state.notifications.map((n) => ({
           ...n,
@@ -146,7 +159,7 @@ const userSlice = createSlice({
   },
 });
 
-/* ================= AUTH THUNKS ================= */
+/* ================= AUTH ACTIONS ================= */
 export const register = (formData) => async (dispatch) => {
   try {
     const { data } = await axios.post(
@@ -157,8 +170,8 @@ export const register = (formData) => async (dispatch) => {
         headers: { "Content-Type": "multipart/form-data" },
       }
     );
+    dispatch(userSlice.actions.registerSuccess(data));
     toast.success(data.message);
-    dispatch(fetchUser());
   } catch (error) {
     toast.error(error?.response?.data?.message);
   }
@@ -171,8 +184,8 @@ export const login = ({ email, password }) => async (dispatch) => {
       { email, password },
       { withCredentials: true }
     );
+    dispatch(userSlice.actions.loginSuccess(data));
     toast.success(data.message);
-    dispatch(fetchUser());
   } catch (error) {
     toast.error(error?.response?.data?.message);
   }
@@ -183,8 +196,8 @@ export const logout = () => async (dispatch) => {
     const { data } = await axios.get(`${USER_API_POINT}/logout`, {
       withCredentials: true,
     });
-    toast.success(data.message);
     dispatch(userSlice.actions.logoutSuccess());
+    toast.success(data.message);
   } catch (error) {
     toast.error(error?.response?.data?.message);
   }
@@ -192,12 +205,4 @@ export const logout = () => async (dispatch) => {
 
 /* ================= EXPORTS ================= */
 export const { resetWinSound } = userSlice.actions;
-
-export {
-  fetchUser,
-  fetchLeaderBoard,
-  fetchNotifications,
-  markReadNotifications,
-};
-
 export default userSlice.reducer;
