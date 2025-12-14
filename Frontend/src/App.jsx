@@ -21,6 +21,7 @@ import ViewAuctionDetail from './pages/ViewAuctionDetail'
 import Dashboard from './pages/DashBoard/Dashboard'
 import ContactUs from './pages/ContactUs'
 import UserProfile from './pages/UserProfile'
+import Notifications from './pages/Notifications'
 
 const App = () => {
   const dispatch = useDispatch()
@@ -49,6 +50,8 @@ const App = () => {
         <Route path="/dashboard" element={<Dashboard />} />
         <Route path='/contact' element={<ContactUs />} />
         <Route path='/me' element={<UserProfile />} />
+        <Route path="/notifications" element={<Notifications />} />
+
       </Routes>
       <ToastContainer position="top-right" />
     </BrowserRouter>
