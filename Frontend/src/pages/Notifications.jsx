@@ -1,58 +1,61 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { fetchNotifications, markReadNotifications } from "@/store/slice/userSlice";
-import { useNavigate } from "react-router-dom";
+import {
+  fetchNotifications,
+  markReadNotifications,
+} from "@/store/slice/userSlice";
+import { RiNotification3Fill } from "react-icons/ri";
 
 const Notifications = () => {
   const dispatch = useDispatch();
-  const navigate = useNavigate();
 
   const { notifications, loading } = useSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(fetchNotifications());
+    dispatch(markReadNotifications());
   }, []);
 
-  const handleClick = async (notification) => {
-    // 1️⃣ Mark all as read (simple & safe)
-    dispatch(markReadNotifications());
-
-    // 2️⃣ Navigate to auction details
-    if (notification.auction) {
-      navigate(`/auction/details/${notification.auction}`);
-    }
-  };
-
-  if (loading) return <p className="p-4">Loading notifications...</p>;
-
-  if (!notifications || notifications.length === 0) {
-    return (
-      <div className="p-6 text-gray-500">
-        No notifications yet 📭
-      </div>
-    );
-  }
-
   return (
-    <section className="p-6 lg:pl-[320px]">
-      <h2 className="text-2xl font-bold mb-4">Notifications</h2>
+    <section className="w-full px-5 pt-20 lg:pl-[320px]">
+      {/* Header */}
+      <div className="flex items-center gap-3 mb-6">
+        <RiNotification3Fill className="text-3xl text-red-500" />
+        <h2 className="text-2xl font-bold">Notifications</h2>
+      </div>
 
-      <ul className="flex flex-col gap-3">
-        {notifications.map((n) => (
-          <li
-            key={n._id}
-            onClick={() => handleClick(n)}
-            className={`cursor-pointer p-4 rounded-md border transition-all
-              ${n.isRead ? "bg-gray-100" : "bg-white border-red-400"}
-            `}
+      {/* Empty State */}
+      {!loading && notifications.length === 0 && (
+        <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
+          <RiNotification3Fill className="text-6xl mb-4" />
+          <p className="text-lg font-semibold">No notifications yet</p>
+          <p className="text-sm">
+            You’ll see updates when you win auctions or receive alerts.
+          </p>
+        </div>
+      )}
+
+      {/* Notifications List */}
+      <div className="flex flex-col gap-4">
+        {notifications.map((notification) => (
+          <div
+            key={notification._id}
+            className={`p-4 rounded-lg border shadow-sm transition-all ${
+              notification.isRead
+                ? "bg-white border-gray-300"
+                : "bg-red-50 border-red-400"
+            }`}
           >
-            <p className="font-medium">{n.message}</p>
-            <span className="text-xs text-gray-500">
-              {new Date(n.createdAt).toLocaleString()}
-            </span>
-          </li>
+            <p className="font-semibold text-gray-800">
+              {notification.message}
+            </p>
+
+            <p className="text-sm text-gray-500 mt-1">
+              {new Date(notification.createdAt).toLocaleString()}
+            </p>
+          </div>
         ))}
-      </ul>
+      </div>
     </section>
   );
 };
