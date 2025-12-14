@@ -1,14 +1,31 @@
 import express from "express";
-import { fetchLeaderboard, getUserProfile, login, logout, register } from "../controllers/userControler.js";
+import {
+  register,
+  login,
+  logout,
+  getUserProfile,
+  fetchLeaderboard,
+  getNotifications,
+  markNotificationsRead,
+} from "../controllers/userControler.js";
 import { isAuthenticated } from "../midellware/auth.js";
 
-const routers = express.Router()
+const router = express.Router();
 
-routers.post("/register",register)
-routers.post("/login",login)
-routers.get("/me",isAuthenticated,getUserProfile);
-routers.get("/logout",isAuthenticated,logout);
-routers.get("/leaderboard",isAuthenticated,fetchLeaderboard);
+/* ================= AUTH ================= */
+router.post("/register", register);
+router.post("/login", login);
+router.get("/logout", isAuthenticated, logout);
 
+/* ================= USER ================= */
+router.get("/me", isAuthenticated, getUserProfile);
 
-export default routers
+/* ================= LEADERBOARD ================= */
+router.get("/leaderboard", fetchLeaderboard); 
+// 🔥 leaderboard should be PUBLIC (no auth)
+
+/* ================= NOTIFICATIONS ================= */
+router.get("/notifications", isAuthenticated, getNotifications);
+router.put("/notifications/read", isAuthenticated, markNotificationsRead);
+
+export default router;

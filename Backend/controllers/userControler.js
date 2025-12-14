@@ -139,3 +139,27 @@ export const fetchLeaderboard = catchAsyncError(async (req, res, next) => {
     leaderboard,
   })
 })
+
+// GET NOTIFICATIONS
+export const getNotifications = catchAsyncError(async (req, res) => {
+  const user = await User.findById(req.user._id)
+
+  res.status(200).json({
+    success: true,
+    notifications: user.notifications.reverse(),
+  })
+})
+
+// MARK AS READ
+export const markNotificationsRead = catchAsyncError(async (req, res) => {
+  await User.updateOne(
+    { _id: req.user._id },
+    { $set: { "notifications.$[].isRead": true } }
+  )
+
+  res.status(200).json({
+    success: true,
+    message: "Notifications marked as read",
+  })
+})
+
