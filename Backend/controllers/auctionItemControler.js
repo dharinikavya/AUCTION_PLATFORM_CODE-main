@@ -196,7 +196,7 @@ export const republishItem = catchAsyncError(async (req, res, next) => {
   })
 })
 
-/* ================= FINALIZE AUCTIONS (🏆 LEADERBOARD + 🔔 NOTIFICATION) ================= */
+/* ================= FINALIZE AUCTIONS (SAFE VERSION) ================= */
 export const finalizeAuction = catchAsyncError(async (req, res) => {
   const now = new Date()
 
@@ -205,40 +205,17 @@ export const finalizeAuction = catchAsyncError(async (req, res) => {
     status: "ACTIVE",
   })
 
+  // ❗ DO NOT UPDATE USERS HERE
+  // Cron job already handles finalization
+
   for (const auction of auctions) {
     auction.status = "ENDED"
-
-    if (auction.bids.length > 0) {
-      const highestBid = auction.bids.reduce((max, bid) =>
-        bid.amount > max.amount ? bid : max
-      )
-
-      auction.winningBidder = highestBid.userId
-      auction.winningBidAmount = highestBid.amount
-
-      await User.findByIdAndUpdate(highestBid.userId, {
-        $inc: {
-          auctionWon: 1,
-          moneySpent: highestBid.amount,
-        },
-        $push: {
-          wonAuctions: {
-            auction: auction._id,
-            bidAmount: highestBid.amount,
-          },
-          notifications: {
-            message: `🎉 You won the auction "${auction.title}" for ₹${highestBid.amount}`,
-            auction: auction._id,
-          },
-        },
-      })
-    }
-
     await auction.save()
   }
 
   res.status(200).json({
     success: true,
-    message: "Auctions finalized, leaderboard updated & notifications sent",
+    message:
+      "Auctions marked as ended. Finalization handled by cron job.",
   })
 })

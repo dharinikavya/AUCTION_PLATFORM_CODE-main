@@ -18,7 +18,7 @@ export const endedAuctionCron = () => {
           auctionItem: auction._id,
         }).sort({ amount: -1 })
 
-        /* 🛑 NO BIDS CASE */
+        /* 🛑 NO BIDS */
         if (!highestBid) {
           auction.status = 'ENDED'
           auction.commissionCalculated = true
@@ -26,7 +26,7 @@ export const endedAuctionCron = () => {
           continue
         }
 
-        const bidder = await User.findById(highestBid.bidder)
+        const bidder = await User.findById(highestBid.userId)
         const auctioner = await User.findById(auction.createdBy)
 
         /* 🏆 UPDATE AUCTION */
@@ -38,27 +38,30 @@ export const endedAuctionCron = () => {
         auction.commissionCalculated = true
         await auction.save()
 
-        /* 📊 UPDATE BIDDER (LEADERBOARD SOURCE) */
+        /* 📊 UPDATE BIDDER */
         bidder.auctionWon += 1
         bidder.moneySpent += highestBid.amount
         bidder.wonAuctions.push({
           auction: auction._id,
           bidAmount: highestBid.amount,
         })
+
         bidder.notifications.push({
-          message: `🎉 You won "${auction.title}" with ₹${highestBid.amount}`,
+          message: `🎉 You won the auction "${auction.title}"`,
           auction: auction._id,
         })
+
         await bidder.save()
 
-        /* 📢 NOTIFY AUCTIONER */
+        /* 📢 AUCTIONER NOTIFICATION */
         auctioner.notifications.push({
           message: `🏆 Your auction "${auction.title}" ended. Winner: ${bidder.userName} (₹${highestBid.amount})`,
           auction: auction._id,
         })
+
         await auctioner.save()
 
-        console.log(`✅ Auction ended & leaderboard updated: ${auction.title}`)
+        console.log(`✅ Auction finalized: ${auction.title}`)
       } catch (error) {
         console.error('❌ Cron error:', error.message)
       }

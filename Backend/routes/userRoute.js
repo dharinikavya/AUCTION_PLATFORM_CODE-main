@@ -21,11 +21,26 @@ router.get("/logout", isAuthenticated, logout);
 router.get("/me", isAuthenticated, getUserProfile);
 
 /* ================= LEADERBOARD ================= */
-router.get("/leaderboard", fetchLeaderboard); 
-// 🔥 leaderboard should be PUBLIC (no auth)
+/**
+ * ✅ PUBLIC
+ * Reason:
+ * - Leaderboard is shown before login
+ * - Used on homepage & leaderboard page
+ */
+router.get("/leaderboard", fetchLeaderboard);
 
-/* ================= NOTIFICATIONS ================= */
+/* ================= 🔔 NOTIFICATIONS ================= */
+/**
+ * ✅ PRIVATE
+ * - Uses httpOnly cookie
+ * - Required for toast, sound, notification page
+ */
 router.get("/notifications", isAuthenticated, getNotifications);
+
+/**
+ * ✅ MARK AS READ
+ * - Called when user clicks notification
+ */
 router.put("/notifications/read", isAuthenticated, markNotificationsRead);
 
 export default router;

@@ -1,61 +1,47 @@
 import React, { useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  fetchNotifications,
-  markReadNotifications,
-} from "@/store/slice/userSlice";
-import { RiNotification3Fill } from "react-icons/ri";
+import { fetchNotifications, markReadNotifications } from "@/store/slice/userSlice";
+import { useNavigate } from "react-router-dom";
 
 const Notifications = () => {
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
-  const { notifications, loading } = useSelector((state) => state.user);
+  const { notifications } = useSelector((state) => state.user);
 
   useEffect(() => {
     dispatch(fetchNotifications());
-    dispatch(markReadNotifications());
   }, []);
 
+  const handleClick = (notification) => {
+    dispatch(markReadNotifications());
+    navigate(`/auction/details/${notification.auction}`);
+  };
+
   return (
-    <section className="w-full px-5 pt-20 lg:pl-[320px]">
-      {/* Header */}
-      <div className="flex items-center gap-3 mb-6">
-        <RiNotification3Fill className="text-3xl text-red-500" />
-        <h2 className="text-2xl font-bold">Notifications</h2>
-      </div>
+    <section className="pt-24 px-6 lg:pl-[320px]">
+      <h2 className="text-2xl font-bold mb-6">🔔 Notifications</h2>
 
-      {/* Empty State */}
-      {!loading && notifications.length === 0 && (
-        <div className="flex flex-col items-center justify-center h-[60vh] text-gray-500">
-          <RiNotification3Fill className="text-6xl mb-4" />
-          <p className="text-lg font-semibold">No notifications yet</p>
-          <p className="text-sm">
-            You’ll see updates when you win auctions or receive alerts.
-          </p>
-        </div>
+      {notifications.length === 0 ? (
+        <p className="text-gray-500">No notifications yet</p>
+      ) : (
+        <ul className="flex flex-col gap-4">
+          {notifications.map((n) => (
+            <li
+              key={n._id}
+              onClick={() => handleClick(n)}
+              className={`p-4 rounded border cursor-pointer transition
+                ${n.isRead ? "bg-gray-100" : "bg-red-50 border-red-400"}
+              `}
+            >
+              <p className="font-semibold">{n.message}</p>
+              <p className="text-sm text-gray-500">
+                {new Date(n.createdAt).toLocaleString()}
+              </p>
+            </li>
+          ))}
+        </ul>
       )}
-
-      {/* Notifications List */}
-      <div className="flex flex-col gap-4">
-        {notifications.map((notification) => (
-          <div
-            key={notification._id}
-            className={`p-4 rounded-lg border shadow-sm transition-all ${
-              notification.isRead
-                ? "bg-white border-gray-300"
-                : "bg-red-50 border-red-400"
-            }`}
-          >
-            <p className="font-semibold text-gray-800">
-              {notification.message}
-            </p>
-
-            <p className="text-sm text-gray-500 mt-1">
-              {new Date(notification.createdAt).toLocaleString()}
-            </p>
-          </div>
-        ))}
-      </div>
     </section>
   );
 };
