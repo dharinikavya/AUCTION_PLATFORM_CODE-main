@@ -46,14 +46,9 @@ const userSlice = createSlice({
     isAuthenticated: false,
     user: null,
 
-    /* 🏆 Leaderboard */
     leaderboard: [],
-
-    /* 🔔 Notifications */
     notifications: [],
     unreadNotificationCount: 0,
-
-    /* 🔊 Win sound */
     playWinSound: false,
   },
 
@@ -113,10 +108,9 @@ const userSlice = createSlice({
     },
   },
 
-  /* ================= EXTRA REDUCERS ================= */
   extraReducers: (builder) => {
     builder
-      /* 🏆 Leaderboard */
+      /* Leaderboard */
       .addCase(fetchLeaderBoard.pending, (state) => {
         state.loading = true;
       })
@@ -128,13 +122,8 @@ const userSlice = createSlice({
         state.loading = false;
       })
 
-      /* 🔔 Notifications */
-      .addCase(fetchNotifications.pending, (state) => {
-        state.loading = true;
-      })
+      /* Notifications */
       .addCase(fetchNotifications.fulfilled, (state, action) => {
-        state.loading = false;
-
         const previousIds = state.notifications.map((n) => n._id);
         const incoming = action.payload;
 
@@ -152,9 +141,6 @@ const userSlice = createSlice({
         if (hasNewWin) {
           state.playWinSound = true;
         }
-      })
-      .addCase(fetchNotifications.rejected, (state) => {
-        state.loading = false;
       })
 
       .addCase(markReadNotifications.fulfilled, (state) => {
@@ -181,12 +167,4 @@ export const logout = () => async (dispatch) => {
 };
 
 export const { resetWinSound } = userSlice.actions;
-
-/* ✅ SINGLE, CLEAN EXPORTS */
-export {
-  fetchLeaderBoard,
-  fetchNotifications,
-  markReadNotifications,
-};
-
 export default userSlice.reducer;
