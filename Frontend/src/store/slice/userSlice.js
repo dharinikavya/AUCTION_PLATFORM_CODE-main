@@ -47,7 +47,6 @@ const userSlice = createSlice({
   },
 
   reducers: {
-    /* ================= AUTH ================= */
     registerRequest(state) {
       state.loading = true;
     },
@@ -84,7 +83,6 @@ const userSlice = createSlice({
       state.playWinSound = false;
     },
 
-    /* ================= USER ================= */
     fetchUserRequest(state) {
       state.loading = true;
     },
@@ -99,7 +97,6 @@ const userSlice = createSlice({
       state.user = null;
     },
 
-    /* ================= LEADERBOARD ================= */
     fetchLeaderBoardRequest(state) {
       state.loading = true;
     },
@@ -112,13 +109,11 @@ const userSlice = createSlice({
       state.leaderboard = [];
     },
 
-    /* 🔇 RESET SOUND FLAG */
     resetWinSound(state) {
       state.playWinSound = false;
     },
   },
 
-  /* ================= 🔔 EXTRA REDUCERS ================= */
   extraReducers: (builder) => {
     builder
       .addCase(fetchNotifications.pending, (state) => {
@@ -127,7 +122,7 @@ const userSlice = createSlice({
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.loading = false;
 
-        const previousIds = state.notifications.map((n) => n._id);
+        const previousIds = state.notifications.map(n => n._id);
         const incoming = action.payload;
 
         state.notifications = incoming;
@@ -158,7 +153,7 @@ const userSlice = createSlice({
   },
 });
 
-/* ================= ✅ LOGOUT THUNK (FIX) ================= */
+/* ================= ✅ LOGOUT THUNK ================= */
 export const logout = () => async (dispatch) => {
   try {
     const { data } = await axios.get(`${USER_API_POINT}/logout`, {
@@ -172,10 +167,4 @@ export const logout = () => async (dispatch) => {
 };
 
 export const { resetWinSound } = userSlice.actions;
-/* ✅ EXPORT THUNKS USED BY UI */
-export {
-  fetchLeaderBoard,
-  fetchNotifications,
-  markReadNotifications,
-};
 export default userSlice.reducer;
