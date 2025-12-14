@@ -3,7 +3,18 @@ import { createSlice, createAsyncThunk } from "@reduxjs/toolkit";
 import axios from "axios";
 import { toast } from "react-toastify";
 
-/* ================= 🔔 NOTIFICATIONS THUNKS ================= */
+/* ================= 🏆 LEADERBOARD ================= */
+export const fetchLeaderBoard = createAsyncThunk(
+  "user/fetchLeaderBoard",
+  async () => {
+    const { data } = await axios.get(`${USER_API_POINT}/leaderboard`, {
+      withCredentials: true,
+    });
+    return data.leaderboard;
+  }
+);
+
+/* ================= 🔔 NOTIFICATIONS ================= */
 export const fetchNotifications = createAsyncThunk(
   "user/fetchNotifications",
   async () => {
@@ -42,7 +53,7 @@ const userSlice = createSlice({
     notifications: [],
     unreadNotificationCount: 0,
 
-    /* 🔊 Sound trigger */
+    /* 🔊 Win sound */
     playWinSound: false,
   },
 
@@ -97,32 +108,34 @@ const userSlice = createSlice({
       state.user = null;
     },
 
-    fetchLeaderBoardRequest(state) {
-      state.loading = true;
-    },
-    fetchLeaderBoardSuccess(state, action) {
-      state.loading = false;
-      state.leaderboard = action.payload;
-    },
-    fetchLeaderBoardFailed(state) {
-      state.loading = false;
-      state.leaderboard = [];
-    },
-
     resetWinSound(state) {
       state.playWinSound = false;
     },
   },
 
+  /* ================= EXTRA REDUCERS ================= */
   extraReducers: (builder) => {
     builder
+      /* 🏆 Leaderboard */
+      .addCase(fetchLeaderBoard.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(fetchLeaderBoard.fulfilled, (state, action) => {
+        state.loading = false;
+        state.leaderboard = action.payload;
+      })
+      .addCase(fetchLeaderBoard.rejected, (state) => {
+        state.loading = false;
+      })
+
+      /* 🔔 Notifications */
       .addCase(fetchNotifications.pending, (state) => {
         state.loading = true;
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.loading = false;
 
-        const previousIds = state.notifications.map(n => n._id);
+        const previousIds = state.notifications.map((n) => n._id);
         const incoming = action.payload;
 
         state.notifications = incoming;
@@ -143,6 +156,7 @@ const userSlice = createSlice({
       .addCase(fetchNotifications.rejected, (state) => {
         state.loading = false;
       })
+
       .addCase(markReadNotifications.fulfilled, (state) => {
         state.notifications = state.notifications.map((n) => ({
           ...n,
@@ -153,7 +167,7 @@ const userSlice = createSlice({
   },
 });
 
-/* ================= ✅ LOGOUT THUNK ================= */
+/* ================= LOGOUT ================= */
 export const logout = () => async (dispatch) => {
   try {
     const { data } = await axios.get(`${USER_API_POINT}/logout`, {
@@ -167,4 +181,12 @@ export const logout = () => async (dispatch) => {
 };
 
 export const { resetWinSound } = userSlice.actions;
+
+/* ✅ SINGLE, CLEAN EXPORTS */
+export {
+  fetchLeaderBoard,
+  fetchNotifications,
+  markReadNotifications,
+};
+
 export default userSlice.reducer;
