@@ -41,6 +41,9 @@ const userSlice = createSlice({
     /* 🔔 Notifications */
     notifications: [],
     unreadNotificationCount: 0,
+
+    /* 🔊 Sound trigger */
+    playWinSound: false,
   },
 
   reducers: {
@@ -78,6 +81,7 @@ const userSlice = createSlice({
       state.user = null;
       state.notifications = [];
       state.unreadNotificationCount = 0;
+      state.playWinSound = false;
     },
 
     /* ================= USER ================= */
@@ -107,9 +111,14 @@ const userSlice = createSlice({
       state.loading = false;
       state.leaderboard = [];
     },
+
+    /* 🔇 RESET SOUND FLAG */
+    resetWinSound(state) {
+      state.playWinSound = false;
+    },
   },
 
-  /* ================= 🔔 EXTRA REDUCERS (NOTIFICATIONS) ================= */
+  /* ================= 🔔 EXTRA REDUCERS ================= */
   extraReducers: (builder) => {
     builder
       /* ===== Fetch Notifications ===== */
@@ -118,10 +127,29 @@ const userSlice = createSlice({
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.loading = false;
-        state.notifications = action.payload;
-        state.unreadNotificationCount = action.payload.filter(
+
+        const previousNotifications = state.notifications;
+        const newNotifications = action.payload;
+
+        state.notifications = newNotifications;
+        state.unreadNotificationCount = newNotifications.filter(
           (n) => !n.isRead
         ).length;
+
+        /* 🔊 Detect NEW WIN notification */
+        if (previousNotifications.length > 0 && newNotifications.length > 0) {
+          const latest = newNotifications[0];
+          const alreadyExists = previousNotifications.find(
+            (n) => n._id === latest._id
+          );
+
+          if (
+            !alreadyExists &&
+            latest.message?.toLowerCase().includes("won the auction")
+          ) {
+            state.playWinSound = true;
+          }
+        }
       })
       .addCase(fetchNotifications.rejected, (state) => {
         state.loading = false;
@@ -215,5 +243,7 @@ export const fetchLeaderBoard = () => async (dispatch) => {
     dispatch(userSlice.actions.fetchLeaderBoardFailed());
   }
 };
+
+export const { resetWinSound } = userSlice.actions;
 
 export default userSlice.reducer;
