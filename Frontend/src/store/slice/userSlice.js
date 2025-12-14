@@ -163,5 +163,4 @@ const userSlice = createSlice({
 });
 
 export const { resetWinSound } = userSlice.actions;
-export { logout };
 export default userSlice.reducer;
