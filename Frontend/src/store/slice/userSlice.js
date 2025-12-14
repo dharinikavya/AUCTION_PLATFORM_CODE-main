@@ -121,14 +121,13 @@ const userSlice = createSlice({
   /* ================= 🔔 EXTRA REDUCERS ================= */
   extraReducers: (builder) => {
     builder
-      /* ===== Fetch Notifications ===== */
       .addCase(fetchNotifications.pending, (state) => {
         state.loading = true;
       })
       .addCase(fetchNotifications.fulfilled, (state, action) => {
         state.loading = false;
 
-        const previousIds = state.notifications.map(n => n._id);
+        const previousIds = state.notifications.map((n) => n._id);
         const incoming = action.payload;
 
         state.notifications = incoming;
@@ -136,7 +135,6 @@ const userSlice = createSlice({
           (n) => !n.isRead
         ).length;
 
-        /* 🔊 Detect NEW WIN notification */
         const hasNewWin = incoming.some(
           (n) =>
             !previousIds.includes(n._id) &&
@@ -150,8 +148,6 @@ const userSlice = createSlice({
       .addCase(fetchNotifications.rejected, (state) => {
         state.loading = false;
       })
-
-      /* ===== Mark Read ===== */
       .addCase(markReadNotifications.fulfilled, (state) => {
         state.notifications = state.notifications.map((n) => ({
           ...n,
@@ -161,6 +157,19 @@ const userSlice = createSlice({
       });
   },
 });
+
+/* ================= ✅ LOGOUT THUNK (FIX) ================= */
+export const logout = () => async (dispatch) => {
+  try {
+    const { data } = await axios.get(`${USER_API_POINT}/logout`, {
+      withCredentials: true,
+    });
+    dispatch(userSlice.actions.logoutSuccess());
+    toast.success(data.message);
+  } catch (error) {
+    toast.error(error?.response?.data?.message);
+  }
+};
 
 export const { resetWinSound } = userSlice.actions;
 export default userSlice.reducer;
