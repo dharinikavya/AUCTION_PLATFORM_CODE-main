@@ -121,7 +121,7 @@ export const getAuctionDetails = catchAsyncError(async (req, res, next) => {
   })
 })
 
-/* ================= DELETE AUCTION ================= */
+/* ================= DELETE AUCTION (🔥 FIXED) ================= */
 export const removeFromAuction = catchAsyncError(async (req, res, next) => {
   const { id } = req.params
 
@@ -141,11 +141,25 @@ export const removeFromAuction = catchAsyncError(async (req, res, next) => {
     return next(new ErrorHandler("Not authorized", 403))
   }
 
+  /* 🔔 REMOVE ALL NOTIFICATIONS RELATED TO THIS AUCTION */
+  await User.updateMany(
+    { "notifications.auction": auction._id },
+    {
+      $pull: {
+        notifications: { auction: auction._id },
+      },
+    }
+  )
+
+  /* 🖼 REMOVE IMAGE */
   if (auction.image?.public_id) {
     await cloudinary.uploader.destroy(auction.image.public_id)
   }
 
+  /* 🗑 REMOVE BIDS */
   await Bid.deleteMany({ auctionItem: auction._id })
+
+  /* 🗑 REMOVE AUCTION */
   await auction.deleteOne()
 
   res.status(200).json({
@@ -196,7 +210,7 @@ export const republishItem = catchAsyncError(async (req, res, next) => {
   })
 })
 
-/* ================= FINALIZE AUCTIONS (SAFE VERSION) ================= */
+/* ================= FINALIZE AUCTIONS ================= */
 export const finalizeAuction = catchAsyncError(async (req, res) => {
   const now = new Date()
 
@@ -205,9 +219,6 @@ export const finalizeAuction = catchAsyncError(async (req, res) => {
     status: "ACTIVE",
   })
 
-  // ❗ DO NOT UPDATE USERS HERE
-  // Cron job already handles finalization
-
   for (const auction of auctions) {
     auction.status = "ENDED"
     await auction.save()
@@ -215,7 +226,6 @@ export const finalizeAuction = catchAsyncError(async (req, res) => {
 
   res.status(200).json({
     success: true,
-    message:
-      "Auctions marked as ended. Finalization handled by cron job.",
+    message: "Auctions marked as ended. Finalization handled by cron.",
   })
 })
