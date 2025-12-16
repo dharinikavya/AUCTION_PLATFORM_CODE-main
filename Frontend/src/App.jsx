@@ -1,22 +1,16 @@
-import React, { useEffect } from 'react'
+ import React, { useEffect } from 'react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { useDispatch, useSelector } from 'react-redux'
+
 import SideDrower from './layout/SideDrower'
 import Home from './pages/Home'
 import Signup from './pages/Signup'
 import Login from './pages/Login'
 import SubmitCommission from './pages/SubmitCommission'
-import { useDispatch, useSelector } from 'react-redux'
-import {
-  fetchLeaderBoard,
-  fetchUser,
-  fetchNotifications,
-  resetWinSound, // 🔇 reset sound flag
-} from './store/slice/userSlice'
 import HowItWorks from './pages/HowItWorks'
 import About from './pages/About'
-import { getAllAuctionItem } from './store/slice/auctionSlice'
 import LeaderBoardPage from './pages/LeaderBoardPage'
 import Auctions from './pages/Auctions'
 import AuctionItem from './pages/AuctionItem'
@@ -28,6 +22,15 @@ import ContactUs from './pages/ContactUs'
 import UserProfile from './pages/UserProfile'
 import Notifications from './pages/Notifications'
 
+import {
+  fetchLeaderBoard,
+  fetchUser,
+  fetchNotifications,
+  resetWinSound,
+} from './store/slice/userSlice'
+
+import { getAllAuctionItem } from './store/slice/auctionSlice'
+
 const App = () => {
   const dispatch = useDispatch()
   const { playWinSound } = useSelector((state) => state.user)
@@ -38,7 +41,7 @@ const App = () => {
     dispatch(getAllAuctionItem())
     dispatch(fetchLeaderBoard())
     dispatch(fetchNotifications())
-  }, [])
+  }, [dispatch])
 
   /* ================= AUTO FETCH NOTIFICATIONS ================= */
   useEffect(() => {
@@ -47,17 +50,17 @@ const App = () => {
     }, 30000) // ⏱️ every 30 seconds
 
     return () => clearInterval(interval)
-  }, [])
+  }, [dispatch])
 
   /* ================= 🔊 PLAY WIN SOUND ================= */
   useEffect(() => {
-    if (playWinSound) {
-      const audio = new Audio('/sounds/win.mp3')
-      audio.play().catch(() => {})
+    if (!playWinSound) return
 
-      dispatch(resetWinSound()) // 🔇 reset after play
-    }
-  }, [playWinSound])
+    const audio = new Audio('/sounds/win.mp3')
+    audio.play().catch(() => {})
+
+    dispatch(resetWinSound())
+  }, [playWinSound, dispatch])
 
   return (
     <BrowserRouter>
