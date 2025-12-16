@@ -15,52 +15,66 @@ import { useNavigate } from 'react-router-dom'
 
 const Dashboard = () => {
   const dispatch = useDispatch()
-  const { loading } = useSelector((state) => state.superAdmin)
-  const {user,isAuthenticated} = useSelector(state=>state.user)
   const navigate = useNavigate()
 
+  const { loading } = useSelector((state) => state.superAdmin)
+  const { user, isAuthenticated } = useSelector((state) => state.user)
+
+  /* ================= LOAD DASHBOARD DATA ================= */
   useEffect(() => {
     dispatch(getMonthlyRevenue())
     dispatch(getAllUsers())
     dispatch(getAllPaymentsProof())
     dispatch(clearAllSuperAdminSliceErrors())
-  }, [])
+  }, [dispatch])
 
-  useEffect(()=>{
-    if(user.role !== "Super Admin" || !isAuthenticated){
-      navigate("/")
+  /* ================= AUTH & ROLE PROTECTION ================= */
+  useEffect(() => {
+    if (!isAuthenticated) {
+      navigate('/')
+      return
     }
-  },[isAuthenticated])
+
+    if (user && user.role !== 'Super Admin') {
+      navigate('/')
+    }
+  }, [isAuthenticated, user, navigate])
+
+  /* ================= UI ================= */
+  if (loading) return <Spinner />
+
   return (
-    <>
-      {loading ? (
-        <Spinner />
-      ) : (
-        <>
-          <div className="w-full ml-0 h-fit px-5 pt-20 lg:pl-[320px] flex flex-col gap-10">
-            <h1 className="text-red-500 text-2xl font-bold mb-2 min-[480px]:text-4xl md:text-6xl xl:text-7xl 2xl:text-8xl">Dashboard</h1>
-            <div className="flex flex-col gap-10">
-                <div className="">
-                    <h3 className="text-black font-bold text-xl">Monthly Total Payment Recived</h3>
-                    <PaymentGraph />
-                </div>
-                <div className="">
-                    <h3 className="text-black font-bold text-xl">Users</h3>
-                    <BiddersAuctionersGraf />
-                </div>
-                <div className="">
-                    <h3 className="text-black font-bold text-xl">Payment Proofs</h3>
-                    <PaymentProof />
-                </div>
-                <div className="">
-                    <h3 className="text-black font-bold text-xl">Delete Item From Auction</h3>
-                    <AuctionItemDelete />
-                </div>
-            </div>
-          </div>
-        </>
-      )}
-    </>
+    <div className="w-full ml-0 h-fit px-5 pt-20 lg:pl-[320px] flex flex-col gap-10">
+      <h1 className="text-red-500 text-2xl font-bold mb-2 min-[480px]:text-4xl md:text-6xl xl:text-7xl 2xl:text-8xl">
+        Dashboard
+      </h1>
+
+      <div className="flex flex-col gap-10">
+        <div>
+          <h3 className="text-black font-bold text-xl">
+            Monthly Total Payment Received
+          </h3>
+          <PaymentGraph />
+        </div>
+
+        <div>
+          <h3 className="text-black font-bold text-xl">Users</h3>
+          <BiddersAuctionersGraf />
+        </div>
+
+        <div>
+          <h3 className="text-black font-bold text-xl">Payment Proofs</h3>
+          <PaymentProof />
+        </div>
+
+        <div>
+          <h3 className="text-black font-bold text-xl">
+            Delete Item From Auction
+          </h3>
+          <AuctionItemDelete />
+        </div>
+      </div>
+    </div>
   )
 }
 
