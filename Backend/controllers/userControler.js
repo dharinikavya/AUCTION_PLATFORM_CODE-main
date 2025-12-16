@@ -56,10 +56,6 @@ export const register = catchAsyncError(async (req, res, next) => {
     profileImage.tempFilePath
   )
 
-  if (!cloudinaryResponse) {
-    return next(new ErrorHandler('Cloudinary upload failed', 400))
-  }
-
   const user = await User.create({
     userName,
     password,
@@ -77,12 +73,8 @@ export const register = catchAsyncError(async (req, res, next) => {
         backAccountIFSC,
         bankName,
       },
-      phonePay: {
-        PhonePayNumber,
-      },
-      paypal: {
-        paypalEmail,
-      },
+      phonePay: { PhonePayNumber },
+      paypal: { paypalEmail },
     },
   })
 
@@ -111,7 +103,7 @@ export const login = catchAsyncError(async (req, res, next) => {
 })
 
 /* ================= LOGOUT ================= */
-export const logout = catchAsyncError(async (req, res, next) => {
+export const logout = catchAsyncError(async (req, res) => {
   res.cookie('token', '', { maxAge: 0 }).status(200).json({
     success: true,
     message: 'User logged out successfully',
@@ -119,47 +111,37 @@ export const logout = catchAsyncError(async (req, res, next) => {
 })
 
 /* ================= USER PROFILE ================= */
-export const getUserProfile = catchAsyncError(async (req, res, next) => {
+export const getUserProfile = catchAsyncError(async (req, res) => {
   const user = await User.findById(req.user._id)
-
-  res.status(200).json({
-    success: true,
-    user,
-  })
+  res.status(200).json({ success: true, user })
 })
 
-/* ================= LEADERBOARD (✅ FIXED) ================= */
-export const fetchLeaderboard = catchAsyncError(async (req, res, next) => {
+/* ================= LEADERBOARD ================= */
+export const fetchLeaderboard = catchAsyncError(async (req, res) => {
   const leaderboard = await User.find({ moneySpent: { $gt: 0 } })
     .sort({ moneySpent: -1 })
     .select('userName moneySpent auctionWon profileImage')
 
-  res.status(200).json({
-    success: true,
-    leaderboard,
-  })
+  res.status(200).json({ success: true, leaderboard })
 })
 
-// GET NOTIFICATIONS
+/* ================= NOTIFICATIONS ================= */
 export const getNotifications = catchAsyncError(async (req, res) => {
   const user = await User.findById(req.user._id)
-
   res.status(200).json({
     success: true,
     notifications: user.notifications.reverse(),
   })
 })
 
-// MARK AS READ
 export const markNotificationsRead = catchAsyncError(async (req, res) => {
   await User.updateOne(
     { _id: req.user._id },
-    { $set: { "notifications.$[].isRead": true } }
+    { $set: { 'notifications.$[].isRead': true } }
   )
 
   res.status(200).json({
     success: true,
-    message: "Notifications marked as read",
+    message: 'Notifications marked as read',
   })
 })
-
