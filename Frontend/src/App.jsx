@@ -1,10 +1,10 @@
- import React, { useEffect } from 'react'
+import React, { useEffect } from 'react'
 import { ToastContainer } from 'react-toastify'
 import 'react-toastify/dist/ReactToastify.css'
 import { BrowserRouter, Route, Routes } from 'react-router-dom'
-import { useDispatch, useSelector } from 'react-redux'
-
 import SideDrower from './layout/SideDrower'
+
+/* Pages */
 import Home from './pages/Home'
 import Signup from './pages/Signup'
 import Login from './pages/Login'
@@ -22,13 +22,14 @@ import ContactUs from './pages/ContactUs'
 import UserProfile from './pages/UserProfile'
 import Notifications from './pages/Notifications'
 
+/* Redux */
+import { useDispatch, useSelector } from 'react-redux'
 import {
-  fetchLeaderBoard,
   fetchUser,
+  fetchLeaderBoard,
   fetchNotifications,
   resetWinSound,
 } from './store/slice/userSlice'
-
 import { getAllAuctionItem } from './store/slice/auctionSlice'
 
 const App = () => {
@@ -43,23 +44,24 @@ const App = () => {
     dispatch(fetchNotifications())
   }, [dispatch])
 
-  /* ================= AUTO FETCH NOTIFICATIONS ================= */
+  /* ================= AUTO REFRESH (EVERY 30s) ================= */
   useEffect(() => {
     const interval = setInterval(() => {
-      dispatch(fetchNotifications())
-    }, 30000) // ⏱️ every 30 seconds
+      dispatch(fetchNotifications()) // 🔔 notifications
+      dispatch(fetchUser())          // 👤 auctionWon count
+      dispatch(fetchLeaderBoard())   // 🏆 leaderboard
+    }, 30000)
 
     return () => clearInterval(interval)
   }, [dispatch])
 
   /* ================= 🔊 PLAY WIN SOUND ================= */
   useEffect(() => {
-    if (!playWinSound) return
-
-    const audio = new Audio('/sounds/win.mp3')
-    audio.play().catch(() => {})
-
-    dispatch(resetWinSound())
+    if (playWinSound) {
+      const audio = new Audio('/sounds/win.mp3')
+      audio.play().catch(() => {})
+      dispatch(resetWinSound())
+    }
   }, [playWinSound, dispatch])
 
   return (
