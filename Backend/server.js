@@ -1,7 +1,7 @@
 import app from "./app.js";
 import dotenv from "dotenv";
 import cloudinary from "cloudinary";
-import { endedAuctionCron } from "./automation/endedAuctionCron.js";
+import { endedAuctionCron } from "./automation/endedAuctionCron.js"; // ✅ IMPORT
 
 dotenv.config();
 
@@ -11,10 +11,10 @@ cloudinary.v2.config({
   cloud_name: process.env.CLOUDINARY_CLOUD_NAME,
 });
 
-const PORT = process.env.PORT || 5100;
+/* 🔥 START CRON */
+endedAuctionCron(); // ✅ THIS LINE IS WHY NOTHING WORKED
 
-/* 🔥 START CRON JOB */
-endedAuctionCron();
+const PORT = process.env.PORT || 5100;
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
