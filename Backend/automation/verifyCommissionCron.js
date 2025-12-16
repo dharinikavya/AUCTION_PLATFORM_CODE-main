@@ -45,7 +45,7 @@ export const verifyCommissionCron = () => {
           })
           const settlementDate = new Date(Date.now())
             .toString()
-            .substring(0, 15)
+            .substring(0, 5)
 
           const subject = `Your Payment Has Been Successfully Verified And Settled`
           const message = `Dear ${user.userName},\n\nWe are pleased to inform you that your recent payment has been successfully verified and settled. Thank you for promptly providing the necessary proof of payment. Your account has been updated, and you can now proceed with your activities on our platform without any restrictions.\n\nPayment Details:\nAmount Settled: ${proof.amount}\nUnpaid Amount: ${updatedUserData.unpaidCommission}\nDate of Settlement: ${settlementDate}\n\nBest regards,\n Auction Team`

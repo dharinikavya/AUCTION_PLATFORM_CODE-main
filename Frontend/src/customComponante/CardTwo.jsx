@@ -155,7 +155,7 @@ const Drower = ({ setOpenDrower, openDrower, id }) => {
               onChange={(date) => setStartTime(date)}
               showTimeSelect
               timeFormat="HH:mm"
-              timeIntervals={15}
+              timeIntervals={5}
               dateFormat="MMMM d, yyyy h:mm aa"
               className="text-[16px] py-2 bg-transparent border-b-[1px] border-b-stone-500 focus:outline-none w-full"
             />
@@ -168,7 +168,7 @@ const Drower = ({ setOpenDrower, openDrower, id }) => {
               selected={endTime}
               onChange={(date) => setEndTime(date)}
               timeFormat="HH:mm"
-              timeIntervals={15}
+              timeIntervals={5}
               showTimeSelect
               dateFormat={'MMMM d, yyyy h, mm aa'}
               className="text-[16px] py-2 bg-transparent border-b-[1px] border-b-stone-500 focus:outline-none w-full"
