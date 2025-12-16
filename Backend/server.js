@@ -1,7 +1,7 @@
 import app from "./app.js";
 import dotenv from "dotenv";
 import cloudinary from "cloudinary";
-import { endedAuctionCron } from "./cron/endedAuctionCron.js"; // ✅ ADD THIS
+import { endedAuctionCron } from "./automation/endedAuctionCron.js";
 
 dotenv.config();
 
