@@ -37,26 +37,30 @@ const LeaderBoardPage = () => {
                     className="border-b border-gray-300"
                   >
                     {/* Rank + Profile */}
-                    <td className="flex gap-2 items-center py-2 px-4">
-                      <span className="text-stone-400 font-semibold text-xl w-7 hidden sm:block">
-                        {i + 1}
-                      </span>
-                      <img
-                        src={element.profileImage?.url}
-                        alt={element.userName}
-                        className="h-12 w-12 rounded-full object-cover"
-                      />
+                    <td className="py-2 px-4">
+                      <div className="flex gap-2 items-center">
+                        <span className="text-stone-400 font-semibold text-xl w-7 hidden sm:block">
+                          {i + 1}
+                        </span>
+                        <img
+                          src={element.profileImage?.url}
+                          alt={element.userName}
+                          className="h-12 w-12 rounded-full object-cover"
+                        />
+                      </div>
                     </td>
 
                     {/* Username + Winner Badge */}
-                    <td className="py-2 px-4 flex items-center gap-2">
-                      <span>{element.userName}</span>
+                    <td className="py-2 px-4">
+                      <div className="flex items-center gap-2">
+                        <span>{element.userName}</span>
 
-                      {element.auctionWon > 0 && (
-                        <span className="bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded-full">
-                          🏆 Winner
-                        </span>
-                      )}
+                        {element.auctionWon > 0 && (
+                          <span className="bg-yellow-400 text-black text-xs font-bold px-2 py-0.5 rounded-full">
+                            🏆 Winner
+                          </span>
+                        )}
+                      </div>
                     </td>
 
                     {/* Money Spent */}
